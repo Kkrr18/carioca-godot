@@ -49,6 +49,7 @@ jobs:
       - name: Exportar Web
         run: |
           rm -rf build
+          mkdir -p build/web
           ./godot --headless --path . --export-release "Web" build/web/index.html
           ls -lh build/web
 

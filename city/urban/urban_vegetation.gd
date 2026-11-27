@@ -80,7 +80,7 @@ static func _plan_street_trees(result: Dictionary, occupied: _Occupancy, network
 		for i in range(count):
 			var t := (float(i) + 0.5) / float(count)
 			for side in [-1.0, 1.0]:
-				var point := a.lerp(b, t) + normal * (offset * side)
+				var point: Vector2 = a.lerp(b, t) + normal * (offset * side)
 				if not occupied.accepts(point, 0.6, false, 3.4):
 					continue
 				if Deterministic.rand01(coord.x * 977 + i, coord.y * 131 + int(side) + 7, seed_value + 211) > config.tree_density:

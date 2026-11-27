@@ -126,7 +126,8 @@ static func _plan_crossings(out: Dictionary, network: RoadNetwork, rect: Rect2, 
 		if major and signals.size() < budget:
 			var offset := width * 0.5 + SIGNAL_OFFSET
 			for side in [1.0, -1.0]:
-				var position := point + Vector2(cos(angle + PI * 0.5), sin(angle + PI * 0.5)) * offset * side
+				# Anotação explícita: `side` vem do Array literal e é Variant.
+				var position: Vector2 = point + Vector2(cos(angle + PI * 0.5), sin(angle + PI * 0.5)) * offset * side
 				if not _on_sidewalk(position, network, rect, CURB_OFFSET * 0.8):
 					continue
 				signals.append({
@@ -171,7 +172,7 @@ static func _plan_signs(out: Dictionary, network: RoadNetwork, rect: Rect2, conf
 		var offset := float(edge["width"]) * 0.5 + CURB_OFFSET
 		for t in [0.22, 0.68]:
 			for side in [1.0, -1.0]:
-				var point := a.lerp(b, t) + normal * offset * side
+				var point: Vector2 = a.lerp(b, t) + normal * offset * side
 				if not _on_sidewalk(point, network, rect, CURB_OFFSET * 0.7):
 					continue
 				if Deterministic.rand01(coord.x + int(t * 100.0), coord.y + int(side), seed_value + 313) > config.prop_density:
