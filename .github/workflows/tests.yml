@@ -9,6 +9,10 @@ jobs:
   headless:
     name: Suíte headless (Godot 4.4)
     runs-on: ubuntu-latest
+    # Runs anteriores ficaram em "running" por mais de uma hora sem concluir.
+    # Com limite, um travamento vira falha com log parcial — que é o que permite
+    # descobrir QUEM trava; sem ele, o job fica pendurado para sempre.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

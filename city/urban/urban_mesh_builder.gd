@@ -495,11 +495,15 @@ static func build_pavement(payload: Dictionary, terrain: TerrainService, origin_
 	if roads.is_empty() or sidewalk <= 0.0:
 		return null
 
+	# Mesma lição do `RoadMeshBuilder` (defeito da primeira execução real):
+	# amostrar só nos extremos do trecho enterrava a calçada no relevo entre
+	# um vértice e outro da malha do terreno. Amostra a cada SAMPLE_STEP.
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var any := false
 	var sidewalk_color := Color(0.70, 0.69, 0.66)
 	var curb_color := Color(0.58, 0.57, 0.55)
+	var outer_drop := 0.3
 
 	for raw in roads:
 		if typeof(raw) != TYPE_DICTIONARY:
@@ -510,37 +514,57 @@ static func build_pavement(payload: Dictionary, terrain: TerrainService, origin_
 			continue
 		var width := float(road.get("width", 6.0))
 		for i in range(points.size() - 1):
-			var a := _vec_array(points[i])
-			var b := _vec_array(points[i + 1])
+			var a := _vec2(points[i])
+			var b := _vec2(points[i + 1])
 			var segment := b - a
 			if segment.length_squared() < 1.0:
 				continue
-			var direction := segment.normalized()
+			var length := segment.length()
+			var direction := segment / length
 			var normal := Vector2(-direction.y, direction.x)
-			for side in [-1.0, 1.0]:
-				var inner := normal * (width * 0.5) * side
-				var outer := normal * (width * 0.5 + sidewalk) * side
-				var a_in := a + inner
-				var b_in := b + inner
-				var a_out := a + outer
-				var b_out := b + outer
-				var y_in := _height_at(terrain, origin_metric, a_in) + curb
-				var y_in_b := _height_at(terrain, origin_metric, b_in) + curb
-				var y_out := _height_at(terrain, origin_metric, a_out) + curb + 0.02
-				var y_out_b := _height_at(terrain, origin_metric, b_out) + curb + 0.02
-				_add_quad(tool,
-					Vector3(a_in.x, y_in, a_in.y), Vector3(b_in.x, y_in_b, b_in.y),
-					Vector3(b_out.x, y_out_b, b_out.y), Vector3(a_out.x, y_out, a_out.y),
-					sidewalk_color, Vector3(0.0, 1.0, 0.0))
-				# Guia: face vertical entre o asfalto e a calçada.
-				_add_quad(tool,
-					Vector3(a_in.x, y_in - curb, a_in.y), Vector3(b_in.x, y_in_b - curb, b_in.y),
-					Vector3(b_in.x, y_in_b, b_in.y), Vector3(a_in.x, y_in, a_in.y),
-					curb_color, Vector3(-normal.x * side, 0.0, -normal.y * side))
-				any = true
+			var steps := clampi(int(ceilf(length / SAMPLE_STEP)), 1, MAX_STEPS)
+			var prev := {}
+
+			for s in range(steps + 1):
+				var t := float(s) / float(steps)
+				var center := a.lerp(b, t)
+				for side_value in [-1.0, 1.0]:
+					var side := float(side_value)
+					var inner := center + normal * (width * 0.5) * side
+					var outer := center + normal * (width * 0.5 + sidewalk) * side
+					var y_in := _height_at(terrain, origin_metric, inner) + curb
+					var y_out := _height_at(terrain, origin_metric, outer) + curb + 0.02
+					var in_v := Vector3(inner.x, y_in, inner.y)
+					var out_v := Vector3(outer.x, y_out, outer.y)
+					if prev.has(side):
+						var previous: Dictionary = prev[side]
+						var prev_in: Vector3 = previous["in"]
+						var prev_out: Vector3 = previous["out"]
+						_add_quad(tool,
+							prev_in, in_v, out_v, prev_out,
+							sidewalk_color, Vector3(0.0, 1.0, 0.0))
+						# Guia: face vertical entre o asfalto e a calçada.
+						var in_road := in_v - Vector3.UP * curb
+						var prev_in_road := prev_in - Vector3.UP * curb
+						_add_quad(tool,
+							prev_in_road, in_road, in_v, prev_in,
+							curb_color, Vector3(-normal.x * side, 0.0, -normal.y * side))
+						# Saia externa: a calçada nunca desaparece no relevo.
+						var out_bot := out_v - Vector3.UP * outer_drop
+						var prev_out_bot := prev_out - Vector3.UP * outer_drop
+						_add_quad(tool,
+							prev_out_bot, out_bot, out_v, prev_out,
+							curb_color, Vector3(normal.x * side, 0.0, normal.y * side))
+					prev[side] = {"in": in_v, "out": out_v}
+					any = true
 
 	_add_markings(tool, payload, terrain, origin_metric)
 	return tool.commit() if any else null
+
+
+## Passo de amostragem do relevo ao longo de uma via (m).
+const SAMPLE_STEP := 8.0
+const MAX_STEPS := 128
 
 
 static func _add_markings(tool: SurfaceTool, payload: Dictionary, terrain: TerrainService, origin_metric: Vector2) -> void:
@@ -562,8 +586,8 @@ static func _add_markings(tool: SurfaceTool, payload: Dictionary, terrain: Terra
 			var center_bar := center + dir * offset
 			var p0 := center_bar - normal * 1.4
 			var p1 := center_bar + normal * 1.4
-			var y0 := _height_at(terrain, origin_metric, p0) + 0.09
-			var y1 := _height_at(terrain, origin_metric, p1) + 0.09
+			var y0 := _height_at(terrain, origin_metric, p0) + 0.19
+			var y1 := _height_at(terrain, origin_metric, p1) + 0.19
 			_add_quad(tool,
 				Vector3((p0 - dir * bar_length * 0.5).x, y0, (p0 - dir * bar_length * 0.5).y),
 				Vector3((p0 + dir * bar_length * 0.5).x, y0, (p0 + dir * bar_length * 0.5).y),
@@ -594,7 +618,7 @@ static func _add_markings(tool: SurfaceTool, payload: Dictionary, terrain: Terra
 			var q1 := p0 + normal
 			var q2 := p1 + normal
 			var q3 := p1 - normal
-			var y := _height_at(terrain, origin_metric, center) + 0.085
+			var y := _height_at(terrain, origin_metric, center) + 0.19
 			_add_quad(tool,
 				Vector3(q0.x, y, q0.y), Vector3(q3.x, y, q3.y),
 				Vector3(q2.x, y, q2.y), Vector3(q1.x, y, q1.y),
