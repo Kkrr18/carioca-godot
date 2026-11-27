@@ -10,6 +10,14 @@
 - **O workflow de testes emite cada falha da suíte como annotation** (`::error::`),
   visível na API pública do job — antes, diagnosticar uma falha exigia login no
   GitHub, porque o painel de log não abre para visitantes.
+- **Modelo do protagonista (`PROTAGONISTA.fbx`) substitui o boneco provisório**:
+  `ProtagonistModel` carrega o `.fbx` importado, normaliza escala para 1,78 m e
+  pivô nos pés pela AABB combinada, aplica a pose procedural no corpo inteiro e
+  entrega o `AnimationPlayer` da cena ao `CharacterAnimator.bind_player()` — que
+  só toca animação cujo nome casa com o estado (`idle`, `walk`, …). Sem o import,
+  o `PlaceholderCharacter` segue como fallback e nada quebra.
+- **O preset de exportação Web deixa de excluir `*.fbx`**, para o protagonista
+  entrar no build web.
 
 ## 0.5.0 — Veículos
 

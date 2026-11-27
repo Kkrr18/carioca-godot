@@ -232,7 +232,7 @@ Nada é baixado em tempo de execução.
 | Motor de movimento do personagem | pronto (caminhada, corrida, sprint, rampa, coyote, buffer) |
 | Estados do personagem | prontos (10 estados explícitos, resolvidos por prioridade) |
 | Câmera em terceira pessoa | pronta (suavização por eixo, zoom, colisão, inversão) |
-| Animação | procedural funcional; árvore importada com gancho pronto (sem asset) |
+| Animação | pose procedural funcional; protagonista importado (`PROTAGONISTA.fbx`) substitui o boneco quando presente |
 | Controles de PC e toque | prontos (ação nomeada, remapeamento, botões, pinça) |
 | Interação com o mundo | pronta (provedores: veículo, porta, grupo `interactable`) |
 | Terceira pessoa + câmera com colisão | pronto |
@@ -276,11 +276,13 @@ Nada é baixado em tempo de execução.
   constrói ali) e bloqueiam vegetação, mas o que se vê é o terreno.
 - **Calçada não tem colisão própria**: é superfície visual sobre a colisão do
   terreno. Portão de muro não abre.
-- **Não há modelo humano com animações licenciadas.** O boneco é provisório, com
-  doze nós e quatro juntas, e a pose é procedural. A camada de animação importada
-  existe (`CharacterAnimator.bind_tree`) e não está ligada a nenhum asset. Não há
-  IK, pé fixo no chão nem *motion matching*; em rampa a pose não se ajusta ao
-  plano.
+- **O modelo do protagonista (`PROTAGONISTA.fbx`) substitui o boneco quando
+  importado**; sem o import (clone fresco antes de abrir o editor), o boneco de
+  primitivas continua valendo como fallback. A pose segue procedural no corpo
+  inteiro (bob, lean, twist, squash); se o `.fbx` trouxer animações esqueléticas,
+  elas só tocam quando o nome casa com o estado (`idle`, `walk`, …). Não há IK,
+  pé fixo no chão nem *motion matching*; em rampa a pose não se ajusta ao plano,
+  e a escala/orientação do modelo é normalização automática, não calibragem.
 - **Sem ragdoll, escalada ou natação.** Caminhar (`CTRL`/botão) reduz a
   velocidade; não muda a altura da cápsula.
 - **Veículos (Etapa 5)**: sem câmbio simulado, sem diferencial e sem dano;

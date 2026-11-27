@@ -15,7 +15,8 @@ extends CharacterBody3D
 ##   PlayerMotor          a matemática: aceleração, gravidade, pulo, rampa
 ##   MovementStateMachine estados explícitos: parado, andando, pulo, queda…
 ##   CharacterAnimator    pose procedural (e gancho para árvore importada)
-##   PlaceholderCharacter boneco provisório com juntas de verdade
+##   ProtagonistModel     modelo importado (`PROTAGONISTA.fbx`) quando presente
+##   PlaceholderCharacter boneco provisório com juntas de verdade (fallback)
 ##   PlayerInteraction    interação extensível por provedores
 ##
 ## Este arquivo só liga essas peças ao corpo físico: lê a entrada, entrega a
@@ -68,7 +69,11 @@ var motor: PlayerMotor = null
 var states: MovementStateMachine = null
 var animator: CharacterAnimator = null
 var interaction: PlayerInteraction = null
-var character: PlaceholderCharacter = null
+## Visual do personagem: `ProtagonistModel` quando o `PROTAGONISTA.fbx`
+## importado existe; `PlaceholderCharacter` quando não. Os dois expõem a mesma
+## operação (`pose(values)`), então quem chama não precisa saber qual está no
+## lugar — e por isso a variável fica sem tipo, chamada dinamicamente.
+var character = null
 
 var _jump_requested: bool = false
 var _jump_held: bool = false
@@ -115,9 +120,20 @@ func _build_collision() -> void:
 func _build_character() -> void:
 	if character != null:
 		return
-	character = PlaceholderCharacter.new()
-	character.name = "Character"
-	add_child(character)
+	# O modelo importado entra quando o .fbx já foi importado (editor aberto ou
+	# `--import` no CI); sem o import, o boneco provisório segue valendo — o
+	# jogo nunca fica sem personagem, e nenhuma outra parte muda de linha.
+	var imported := ProtagonistModel.load_if_available()
+	if imported != null:
+		character = imported
+		character.name = "Character"
+		add_child(character)
+		if imported.animation_player != null:
+			animator.bind_player(imported.animation_player)
+	else:
+		character = PlaceholderCharacter.new()
+		character.name = "Character"
+		add_child(character)
 
 
 ## Aplica um perfil de movimento vindo do perfil gráfico/plataforma.
