@@ -32,9 +32,11 @@ func test_distances_are_increasing() -> void:
 				profile.distances[level] > 0.0 and profile.distances[level] < profile.distances[level + 1],
 				"%s: faixa %d antes da %d" % [preset_name, level, level + 1]
 			)
+		# A penúltima faixa precisa ser uma distância real; a última é 0, que
+		# significa "sem limite" — e infinito é sempre maior que a penúltima.
 		assert_true(
-			profile.distances[profile.level_count() - 2] < profile.distances[profile.level_count() - 1],
-			"%s: penúltima faixa antes da última" % preset_name
+			profile.distances[profile.level_count() - 2] > 0.0,
+			"%s: penúltima faixa é uma distância real" % preset_name
 		)
 		assert_almost_eq(profile.distances[profile.level_count() - 1], 0.0, 1e-9, "%s: último nível sem limite" % preset_name)
 

@@ -72,7 +72,17 @@ func _initialize() -> void:
 			total_failures += 1
 			failing_files.append(path)
 			continue
-		var instance = script.new()
+		var instance = null
+		if script.has_method("can_instantiate") and not script.can_instantiate():
+			# Um script que não compila não pode matar o executor inteiro: é assim
+			# que a suíte ficava pendurada para sempre (o erro de `.new()` num
+			# GDScript quebrado abortava `_initialize` e o Godot ficava ocioso
+			# até o timeout do CI). Falha localizada, e a suíte continua.
+			print("  [ERRO] %s não pôde ser instanciada (compilação falhou)" % path)
+			total_failures += 1
+			failing_files.append(path)
+			continue
+		instance = script.new()
 		if not (instance is TestCase):
 			print("  [ERRO] %s não estende TestCase" % path)
 			total_failures += 1

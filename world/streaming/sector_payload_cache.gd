@@ -30,7 +30,11 @@ var _kb: Dictionary = {}
 var _recency: Array[Vector2i] = []
 
 
-func get(coord: Vector2i) -> Dictionary:
+## Nome com cuidado: chamar isto de `get` sobrescreve o `Object.get()` nativo
+## (getter de propriedade), e o parser do Godot 4.4 não resolve o membro —
+## o erro "Could not resolve external class member" cascata pelo grafo de
+## classes inteiro e derruba até a suíte de testes. Ficou `get_payload`.
+func get_payload(coord: Vector2i) -> Dictionary:
 	if not _entries.has(coord):
 		misses += 1
 		return {}

@@ -337,7 +337,7 @@ func _refresh_wanted(cell: Vector2i, forward: Vector2) -> void:
 	for coord in _wanted.keys():
 		if _loaded.has(coord) or _inflight.has(coord) or ready.has(coord):
 			continue
-		var cached := cache.get(coord)
+		var cached := cache.get_payload(coord)
 		if not cached.is_empty():
 			# Acerto de cache: entra como payload pronto, sem thread nenhuma.
 			_lock.lock()

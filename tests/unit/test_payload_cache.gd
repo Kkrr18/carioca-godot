@@ -14,10 +14,10 @@ func test_put_and_get() -> void:
 	var cache := SectorPayloadCache.new()
 	cache.put(Vector2i(1, 2), _payload(3))
 	assert_true(cache.has(Vector2i(1, 2)), "entrada presente")
-	var payload: Dictionary = cache.get(Vector2i(1, 2))
+	var payload: Dictionary = cache.get_payload(Vector2i(1, 2))
 	assert_eq(str(payload.get("version", 0)), "2", "payload devolvido")
 	assert_eq(cache.hits, 1, "acerto contabilizado")
-	assert_true(cache.get(Vector2i(9, 9)).is_empty(), "ausente devolve vazio")
+	assert_true(cache.get_payload(Vector2i(9, 9)).is_empty(), "ausente devolve vazio")
 	assert_eq(cache.misses, 1, "erro contabilizado")
 
 
@@ -32,7 +32,7 @@ func test_lru_evicts_the_least_recent() -> void:
 	cache.limit_entries = 2
 	cache.put(Vector2i(0, 0), _payload(1))
 	cache.put(Vector2i(1, 0), _payload(1))
-	cache.get(Vector2i(0, 0))
+	cache.get_payload(Vector2i(0, 0))
 	cache.put(Vector2i(2, 0), _payload(1))
 	assert_true(cache.has(Vector2i(0, 0)), "usado recentemente permanece")
 	assert_false(cache.has(Vector2i(1, 0)), "menos recente saiu")
