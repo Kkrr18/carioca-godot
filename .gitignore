@@ -1,7 +1,7 @@
 # Godot
 .godot/
 *.translation
-export_presets.cfg
+# export_presets.cfg fica versionado: o workflow de exportação web usa o preset "Web".
 .DS_Store
 
 # Dados brutos que não vão para o repositório (baixados pelo usuário)
