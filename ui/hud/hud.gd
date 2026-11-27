@@ -235,6 +235,13 @@ func _update_debug() -> void:
 	var urban := _urban_line()
 	if not urban.is_empty():
 		lines.append(urban)
+	# Diagnóstico do dado: se o traçado esquemático ou os pontos de referência
+	# não carregarem (listagem de arquivo quebrada, export web), o número
+	# aparece zero na tela em vez de a cidade nascer vazia em silêncio.
+	lines.append("traçado esquemático %d · pontos de referência %d" % [
+		StreetFramework.sheet_count(),
+		LandmarkRegistry.count(),
+	])
 	if day_night != null and weather != null:
 		lines.append("tempo %s   clima %s   aderência %.0f%%" % [
 			day_night.time_string(),

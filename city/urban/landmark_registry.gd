@@ -22,6 +22,14 @@ extends RefCounted
 
 const DATA_DIR := "res://data/geographic/landmarks"
 
+## Fallback de listagem para o export web — mesmo motivo e mesmo desenho do
+## `StreetFramework.KNOWN_SHEETS`: `DirAccess` listando `res://` não é
+## confiável no build web, e sem a listagem nenhum ponto de referência
+## carregaria. Um conjunto novo entra pela listagem em desktop.
+const KNOWN_DATASETS: Array[String] = [
+	"res://data/geographic/landmarks/guapimirim_centro.json",
+]
+
 static var _loaded: bool = false
 static var _lock := Mutex.new()
 static var _datasets: Array = []
@@ -188,16 +196,19 @@ static func datasets() -> Array:
 static func _json_files(dir_path: String) -> Array[String]:
 	var out: Array[String] = []
 	var dir := DirAccess.open(dir_path)
-	if dir == null:
-		return out
-	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while entry != "":
-		if not dir.current_is_dir() and entry.ends_with(".json"):
-			out.append(dir_path.path_join(entry))
-		entry = dir.get_next()
-	dir.list_dir_end()
-	out.sort()
+	if dir != null:
+		dir.list_dir_begin()
+		var entry := dir.get_next()
+		while entry != "":
+			if not dir.current_is_dir() and entry.ends_with(".json"):
+				out.append(dir_path.path_join(entry))
+			entry = dir.get_next()
+		dir.list_dir_end()
+		out.sort()
+	if out.is_empty():
+		for known in KNOWN_DATASETS:
+			if FileAccess.file_exists(known):
+				out.append(known)
 	return out
 
 

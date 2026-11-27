@@ -78,6 +78,16 @@ mundo real das Etapas 1–3. Relatório completo em [docs/ETAPA5.md](docs/ETAPA5
   (`urban_props.gd`, `urban_vegetation.gd`, `test_payload_cache.gd`) e a
   ausência da pasta-alvo do export web — corrigidos antes desta etapa.
 - O build web agora publica: **https://kkrr18.github.io/carioca-godot/**
+- **Defeitos de web encontrados na primeira execução real do jogo publicada**
+  (mundo nascia sem ruas nem prédios, fila de setores presa): `DirAccess`
+  listando `res://` não é confiável no export web — sem a listagem, o traçado
+  esquemático e os pontos de referência não carregavam; agora há fallback por
+  acesso direto (`StreetFramework.KNOWN_SHEETS`,
+  `LandmarkRegistry.KNOWN_DATASETS`) e o HUD mostra os contadores. E o
+  `WorkerThreadPool` num build web sem threads nunca completa tarefas por
+  polling (`is_task_completed` não as vê terminar) — o streaming inteiro
+  travava com a fila cheia; na web a carga roda **inline** no próprio passo,
+  limitada pelo mesmo teto de simultaneidade.
 
 ## 0.4.0 — Personagem
 

@@ -105,6 +105,14 @@ var _evictions: int = 0
 var _retries: int = 0
 var _load_failures: int = 0
 
+## Build web sem threads (`variant/thread_support=false` no export): o
+## `WorkerThreadPool` só executa tarefas dentro de `wait_for_task_completion`,
+## e o polling de `is_task_completed` nunca as vê terminar — o streaming
+## inteiro trava com a fila cheia (defeito encontrado na primeira execução
+## real, na web). Na web a carga roda **inline**, no próprio passo, limitada
+## pelo mesmo teto de simultaneidade. Desktop com threads segue por workers.
+var _inline_loads: bool = OS.get_name() == "Web"
+
 
 func _init() -> void:
 	lod = SectorLodController.new()
@@ -369,6 +377,23 @@ func _prefetch_cells(cell: Vector2i, forward: Vector2) -> Array[Vector2i]:
 func _start_tasks() -> void:
 	var now := Time.get_ticks_msec()
 	var deferred: Array[Vector2i] = []
+	if _inline_loads:
+		var started := 0
+		while started < max_concurrent_tasks and not queue.is_empty():
+			var coord_inline := queue.pop()
+			if coord_inline == SectorRequestQueue.SENTINEL:
+				break
+			if _loaded.has(coord_inline) or not _wanted.has(coord_inline):
+				continue
+			var failure_inline: Dictionary = _failures.get(coord_inline, {})
+			if not failure_inline.is_empty() and int(failure_inline.get("next_at", 0)) > now:
+				deferred.append(coord_inline)
+				continue
+			_load_task(coord_inline)
+			started += 1
+		for coord in deferred:
+			queue.push_back(coord)
+		return
 	while _inflight.size() < max_concurrent_tasks and not queue.is_empty():
 		var coord := queue.pop()
 		if coord == SectorRequestQueue.SENTINEL:

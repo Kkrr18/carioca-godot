@@ -244,3 +244,17 @@ func test_rebuild_all_releases_everything() -> void:
 	_tick(manager, 200)
 	assert_eq(manager.loaded_count(), 9, "recomeça o raio completo")
 	_dispose(ctx)
+
+
+func test_inline_loads_build_the_world_without_threads() -> void:
+	# É o caminho do build web sem threads: WorkerThreadPool não executa
+	# tarefas fora de wait_for_task_completion, e o polling nunca as vê
+	# terminar. Com carga inline, a fila precisa drenar do mesmo jeito.
+	var ctx := _make_manager(1)
+	var manager: SectorStreamingManager = ctx["manager"]
+	manager._inline_loads = true
+	_tick(manager, 120)
+	assert_greater(float(manager.loaded_count()), 0.0, "carga inline constrói o mundo")
+	assert_eq(manager.inflight_count(), 0, "carga inline não ocupa vaga de worker")
+	assert_eq(manager.memory.count(), manager.loaded_count(), "contabilidade acompanha")
+	_dispose(ctx)

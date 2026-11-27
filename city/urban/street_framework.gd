@@ -23,6 +23,16 @@ extends RefCounted
 
 const DATA_DIR := "res://data/geographic/urban"
 
+## Listagem de fallback para o export web. `DirAccess` listando `res://`
+## não é confiável no build web — sem a listagem, o traçado esquemático não
+## carrega e a cidade nasce sem ruas (defeito encontrado na primeira execução
+## real do jogo, na web). Em desktop a listagem continua valendo, porque é
+## ela que deixa um conjunto novo entrar sem tocar em código; onde ela falha
+## ou não acha nada, a lista conhecida assume, por acesso direto.
+const KNOWN_SHEETS: Array[String] = [
+	"res://data/geographic/urban/guapimirim_centro.json",
+]
+
 ## Crescimento aplicado ao retângulo ao decidir se um conjunto cobre o recorte:
 ## uma via que passa raspando na fronteira ainda interessa.
 const EDGE_MARGIN := 60.0
@@ -54,6 +64,14 @@ static func reload() -> void:
 	_sheets.clear()
 	_lock.unlock()
 	ensure_loaded()
+
+
+## Quantos conjuntos esquemáticos carregaram — número de diagnóstico.
+## 0 significa "cidade sem traçado": é o que o HUD mostra para o defeito de
+## carregamento de dado ser visível, e não silencioso.
+static func sheet_count() -> int:
+	ensure_loaded()
+	return _sheets.size()
 
 
 ## Conjunto esquemático que cobre o recorte, ou vazio.
@@ -167,16 +185,21 @@ static func attribution_text() -> String:
 static func _json_files(dir_path: String) -> Array[String]:
 	var out: Array[String] = []
 	var dir := DirAccess.open(dir_path)
-	if dir == null:
-		return out
-	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while entry != "":
-		if not dir.current_is_dir() and entry.ends_with(".json"):
-			out.append(dir_path.path_join(entry))
-		entry = dir.get_next()
-	dir.list_dir_end()
-	out.sort()
+	if dir != null:
+		dir.list_dir_begin()
+		var entry := dir.get_next()
+		while entry != "":
+			if not dir.current_is_dir() and entry.ends_with(".json"):
+				out.append(dir_path.path_join(entry))
+			entry = dir.get_next()
+		dir.list_dir_end()
+		out.sort()
+	if out.is_empty():
+		# Listagem indisponível (build web) ou pasta vazia: tenta os arquivos
+		# conhecidos por acesso direto, que funciona em qualquer plataforma.
+		for known in KNOWN_SHEETS:
+			if FileAccess.file_exists(known):
+				out.append(known)
 	return out
 
 
