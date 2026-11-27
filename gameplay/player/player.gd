@@ -49,6 +49,9 @@ const DOOR_RADIUS := 4.5
 const COLLISION_LAYER := 2
 const COLLISION_MASK := 1
 
+## Assento do motorista, em coordenadas locais do veículo (esquerda, cabine).
+const DRIVER_SEAT_OFFSET := Vector3(-0.38, 0.55, -0.15)
+
 var camera_rig: PlayerCamera = null
 var touch_controls: TouchControls = null
 var vehicle_manager: VehicleManager = null
@@ -280,7 +283,9 @@ func _pin_to_vehicle() -> void:
 	if current_vehicle == null:
 		return
 	velocity = Vector3.ZERO
-	global_position = current_vehicle.global_position + Vector3.UP * 0.6
+	# Assento do motorista: banco esquerdo, dentro da cabine — e não "em cima
+	# do teto". É o que a Etapa 1 fazia, porque o personagem ficava invisível.
+	global_position = current_vehicle.global_position + current_vehicle.global_transform.basis * DRIVER_SEAT_OFFSET
 
 
 ## Entrada de movimento unificada: teclado e analógico virtual, a maior amplitude
@@ -371,6 +376,11 @@ func enter_vehicle(vehicle: Vehicle) -> void:
 	can_move = false
 	motor.reset()
 	velocity = Vector3.ZERO
+	# Já nasce sentado no banco, não flutuando sobre o teto: o pin de física
+	# corrige no próximo passo, mas o primeiro quadro merece o lugar certo.
+	global_position = vehicle.global_position + vehicle.global_transform.basis * DRIVER_SEAT_OFFSET
+	if camera_rig is VehicleCamera:
+		(camera_rig as VehicleCamera).enter_vehicle_mode()
 	if camera_rig != null:
 		camera_rig.set_target(vehicle)
 	if interaction != null:
@@ -388,11 +398,14 @@ func exit_vehicle() -> void:
 	visible = true
 	can_move = true
 	motor.reset()
+	if camera_rig is VehicleCamera:
+		(camera_rig as VehicleCamera).leave_vehicle_mode()
 	if camera_rig != null:
 		camera_rig.set_target(self)
-	var side := vehicle.global_transform.basis.x.normalized()
-	var exit_position := vehicle.global_position + side * 2.3 + Vector3.UP * 1.2
-	global_position = exit_position
+	# Saída pelo lado livre: do lado onde o motorista está, caindo para o outro
+	# lado se estiver bloqueado (parede, outro carro). Nunca preso dentro.
+	var side := vehicle.best_exit_side(global_position)
+	global_position = vehicle.exit_position(side)
 	velocity = Vector3.ZERO
 	if interaction != null:
 		interaction.refresh_now(self)

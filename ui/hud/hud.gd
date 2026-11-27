@@ -114,6 +114,14 @@ func _make_label(font_size: int, color: Color) -> Label:
 
 
 func _process(delta: float) -> void:
+	# O layout de toque acompanha o contexto: a pé é andar/pular; dirigindo é
+	# pedal, buzina e sair. É o HUD que decide, para o jogador não precisar
+	# lembrar de trocar de layout ao entrar no carro.
+	if touch != null and player != null:
+		var driving := player.current_vehicle != null
+		if touch.vehicle_mode != driving:
+			touch.vehicle_mode = driving
+			touch.reset()
 	if hint_label != null and _hint_timer > 0.0:
 		_hint_timer -= delta
 		if _hint_timer <= 0.0:
@@ -245,6 +253,12 @@ func _update_debug() -> void:
 		if player.camera_rig != null:
 			camera_text = player.camera_rig.describe()
 		lines.append("personagem %s   câmera %s" % [str(player.describe()), camera_text])
+	if player != null and player.current_vehicle != null:
+		var vehicle := player.current_vehicle
+		var camera_line := "—"
+		if player.camera_rig != null and player.camera_rig is VehicleCamera:
+			camera_line = (player.camera_rig as VehicleCamera).describe()
+		lines.append("veículo %s   câmera do carro %s" % [str(vehicle.describe()), camera_line])
 	debug_label.text = "\n".join(lines)
 
 

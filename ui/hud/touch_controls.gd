@@ -55,6 +55,19 @@ var _interact_touch: int = -1
 var _interact_label: String = ""
 var _interact_available: bool = false
 
+## Etapa 5 — modo veículo. O HUD liga e desliga conforme o motorista entra e
+## sai. O analógico continua na metade esquerda, mas agora é o volante; a
+## direita troca os botões de movimento pelos pedais, buzina, freio de mão,
+## câmera e sair.
+var vehicle_mode: bool = false
+var handbrake_active: bool = false
+var horn_active: bool = false
+var _throttle_touch: int = -1
+var _brake_touch: int = -1
+var _handbrake_touch: int = -1
+var _horn_touch: int = -1
+var _camera_mode_pending: bool = false
+
 
 func _ready() -> void:
 	anchor_right = 1.0
@@ -94,6 +107,10 @@ func button_radius(button: String) -> float:
 	var base := 34.0
 	if button == "sprint":
 		base = 30.0
+	if button == "throttle" or button == "brake":
+		base = 42.0
+	if button == "handbrake" or button == "horn" or button == "camera" or button == "exit":
+		base = 26.0
 	return base * layout_scale
 
 
@@ -106,12 +123,32 @@ func button_center(button: String) -> Vector2:
 			return Vector2(size.x - margin * 2.0, size.y - margin * 0.62)
 		"interact":
 			return Vector2(size.x - margin * 0.92, size.y - margin * 1.86)
+		# Modo veículo: pedais grandes embaixo, mão/buzina em cima,
+		# câmera e sair nas bordas onde o polegar não fica em cima do pedal.
+		"throttle":
+			return Vector2(size.x - margin * 1.0, size.y - margin * 0.62)
+		"brake":
+			return Vector2(size.x - margin * 2.35, size.y - margin * 0.62)
+		"handbrake":
+			return Vector2(size.x - margin * 1.68, size.y - margin * 1.8)
+		"horn":
+			return Vector2(size.x - margin * 0.5, size.y - margin * 1.8)
+		"camera":
+			return Vector2(size.x - margin * 3.3, size.y - margin * 0.62)
+		"exit":
+			return Vector2(size.x - margin * 3.3, size.y - margin * 1.8)
 		_:
 			return Vector2(size.x - margin, size.y - margin)
 
 
+func _active_buttons() -> Array:
+	if vehicle_mode:
+		return ["throttle", "brake", "handbrake", "horn", "camera", "exit"]
+	return ["jump", "sprint", "interact"]
+
+
 func hit_button(position: Vector2) -> String:
-	for button in ["jump", "sprint", "interact"]:
+	for button in _active_buttons():
 		if button == "interact" and not _interact_available:
 			continue
 		if position.distance_to(button_center(button)) <= button_radius(button) * 1.15:
@@ -130,6 +167,41 @@ func handle_touch(index: int, position: Vector2, pressed: bool) -> void:
 	_layout()
 	if pressed:
 		var button := hit_button(position)
+		if vehicle_mode:
+			match button:
+				"throttle":
+					if _throttle_touch < 0:
+						_throttle_touch = index
+					queue_redraw()
+					return
+				"brake":
+					if _brake_touch < 0:
+						_brake_touch = index
+					queue_redraw()
+					return
+				"handbrake":
+					if _handbrake_touch < 0:
+						_handbrake_touch = index
+						handbrake_active = true
+					queue_redraw()
+					return
+				"horn":
+					if _horn_touch < 0:
+						_horn_touch = index
+						horn_active = true
+					queue_redraw()
+					return
+				"camera":
+					_camera_mode_pending = true
+					queue_redraw()
+					return
+				"exit":
+					if _interact_touch < 0:
+						_interact_touch = index
+						_interact_pending = true
+						interact_requested.emit()
+					queue_redraw()
+					return
 		if button == "jump" and _jump_touch < 0:
 			_jump_touch = index
 			_jump_pending = true
@@ -166,7 +238,7 @@ func handle_touch(index: int, position: Vector2, pressed: bool) -> void:
 		_move_touch = -1
 		move_vector = Vector2.ZERO
 	elif index == _look_touch:
-		if tap_to_jump and _look_travel < 12.0:
+		if tap_to_jump and _look_travel < 12.0 and not vehicle_mode:
 			_jump_pending = true
 		_look_touch = -1
 		_pinch_touch = -1
@@ -181,6 +253,16 @@ func handle_touch(index: int, position: Vector2, pressed: bool) -> void:
 		sprint_active = false
 	elif index == _interact_touch:
 		_interact_touch = -1
+	elif index == _throttle_touch:
+		_throttle_touch = -1
+	elif index == _brake_touch:
+		_brake_touch = -1
+	elif index == _handbrake_touch:
+		_handbrake_touch = -1
+		handbrake_active = false
+	elif index == _horn_touch:
+		_horn_touch = -1
+		horn_active = false
 	queue_redraw()
 
 
@@ -231,6 +313,22 @@ func consume_zoom() -> float:
 	return value
 
 
+## Pedal do modo veículo: +1 acelerador pisado, -1 freio/ré, 0 pé solto.
+## Segurar o dedo é pisar — sem estado para consumir, é leitura direta.
+func pedal_value() -> float:
+	if _throttle_touch >= 0:
+		return 1.0
+	if _brake_touch >= 0:
+		return -1.0
+	return 0.0
+
+
+func consume_camera_mode() -> bool:
+	var value := _camera_mode_pending
+	_camera_mode_pending = false
+	return value
+
+
 ## Chamado pelo HUD quando a interação disponível muda. Sem rótulo, o botão some.
 func set_interaction(label: String) -> void:
 	var available := not label.is_empty()
@@ -252,12 +350,19 @@ func reset() -> void:
 	_jump_touch = -1
 	_sprint_touch = -1
 	_interact_touch = -1
+	_throttle_touch = -1
+	_brake_touch = -1
+	_handbrake_touch = -1
+	_horn_touch = -1
 	move_vector = Vector2.ZERO
 	_look_delta = Vector2.ZERO
 	_jump_pending = false
 	_interact_pending = false
 	_zoom_delta = 0.0
 	sprint_active = false
+	handbrake_active = false
+	horn_active = false
+	_camera_mode_pending = false
 
 
 func _draw() -> void:
@@ -265,10 +370,18 @@ func _draw() -> void:
 		return
 	_layout()
 	_draw_stick()
-	_draw_button("sprint", "correr", sprint_active)
-	_draw_button("jump", "pular", _jump_touch >= 0)
-	if _interact_available:
-		_draw_button("interact", _short_label(_interact_label), _interact_touch >= 0)
+	if vehicle_mode:
+		_draw_button("throttle", "acelerar", _throttle_touch >= 0)
+		_draw_button("brake", "freio/ré", _brake_touch >= 0)
+		_draw_button("handbrake", "mão", handbrake_active)
+		_draw_button("horn", "buzina", horn_active)
+		_draw_button("camera", "câmera", false)
+		_draw_button("exit", "sair", _interact_touch >= 0)
+	else:
+		_draw_button("sprint", "correr", sprint_active)
+		_draw_button("jump", "pular", _jump_touch >= 0)
+		if _interact_available:
+			_draw_button("interact", _short_label(_interact_label), _interact_touch >= 0)
 
 
 func _draw_stick() -> void:

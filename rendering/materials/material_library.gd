@@ -90,6 +90,62 @@ static func vehicle(body_color: Color) -> StandardMaterial3D:
 		return mat)
 
 
+## Vidro do carro: transparente, reflexivo, dois lados (o para-brisa é visto
+## de dentro e de fora).
+static func vehicle_glass() -> StandardMaterial3D:
+	return _get_or_create("vehicle_glass", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.35, 0.42, 0.5, 0.55)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.roughness = 0.08
+		mat.metallic = 0.2
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		return mat)
+
+
+## Plástico/preto fosco: para-choque, grade, retrovisor.
+static func vehicle_trim() -> StandardMaterial3D:
+	return _get_or_create("vehicle_trim", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.09, 0.09, 0.1)
+		mat.roughness = 0.85
+		return mat)
+
+
+## Aro da roda: mais claro que o pneu, metálico.
+static func vehicle_rim() -> StandardMaterial3D:
+	return _get_or_create("vehicle_rim", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.62, 0.62, 0.64)
+		mat.roughness = 0.3
+		mat.metallic = 0.8
+		return mat)
+
+
+## Faróis e lanternas: emissivos, compartilhados como as luminárias públicas.
+## Acendem com o ciclo do dia? Ainda não — o gancho é este material único.
+static func vehicle_headlight() -> StandardMaterial3D:
+	return _get_or_create("vehicle_headlight", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.92, 0.93, 0.88)
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.97, 0.85)
+		mat.emission_energy_multiplier = 0.35
+		mat.roughness = 0.2
+		return mat)
+
+
+static func vehicle_taillight() -> StandardMaterial3D:
+	return _get_or_create("vehicle_taillight", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.45, 0.06, 0.05)
+		mat.emission_enabled = true
+		mat.emission = Color(0.9, 0.1, 0.06)
+		mat.emission_energy_multiplier = 0.25
+		mat.roughness = 0.25
+		return mat)
+
+
 static func pedestrian(cloth_color: Color) -> StandardMaterial3D:
 	var key := "ped_%s" % cloth_color.to_html(false)
 	return _get_or_create(key, func() -> Material:

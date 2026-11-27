@@ -3,18 +3,22 @@
 Mundo aberto do Estado do Rio de Janeiro — Godot 4.4, GDScript, coordenadas
 geográficas reais, streaming contínuo e escala 1:1 como objetivo.
 
-**Versão atual: 0.4.0 — Personagem.** Não é um jogo terminado: é a base técnica
+**Versão atual: 0.5.0 — Veículos.** Não é um jogo terminado: é a base técnica
 que sustenta o estado inteiro, com um protótipo jogável em Guapimirim e Magé em
-cima dela. A Etapa 2 acrescentou LOD por distância, prioridade de carga na direção
-do movimento, cache de payload, orçamento de memória e retentativa de carga. A
-Etapa 3 acrescentou a cidade: quadras extraídas da geometria das ruas, lotes, sete
-tipologias de edificação com fachada por pavimento, calçada, mobiliário, vegetação
-e pontos de referência. A Etapa 4 acrescentou o personagem: motor de movimento
-com caminhada, corrida e sprint, *coyote time*, *buffer* de pulo, rampa, estados
-explícitos, câmera com zoom e suavização por eixo, controles de PC e toque com
-ação nomeada e remapeamento, e interação extensível por provedores. Os relatórios
-estão em [docs/ETAPA2.md](docs/ETAPA2.md), [docs/ETAPA3.md](docs/ETAPA3.md) e
-[docs/ETAPA4.md](docs/ETAPA4.md).
+cima dela. A Etapa 2 acrescentou LOD por distância, prioridade de carga na
+direção do movimento, cache de payload, orçamento de memória e retentativa de
+carga. A Etapa 3 acrescentou a cidade: quadras extraídas da geometria das ruas,
+lotes, sete tipologias de edificação com fachada por pavimento, calçada,
+mobiliário, vegetação e pontos de referência. A Etapa 4 acrescentou o
+personagem: motor de movimento com caminhada, corrida e sprint, *coyote time*,
+*buffer* de pulo, rampa, estados explícitos, câmera com zoom e suavização por
+eixo, controles de PC e toque com ação nomeada e remapeamento, e interação
+extensível por provedores. A Etapa 5 acrescentou os veículos: dirigir com
+aceleração progressiva, freio, ré, freio de mão, esterço por velocidade,
+buzina, câmera veicular com duas distâncias, entrada pelo lado livre e controles
+de PC e toque. Os relatórios estão em [docs/ETAPA2.md](docs/ETAPA2.md),
+[docs/ETAPA3.md](docs/ETAPA3.md), [docs/ETAPA4.md](docs/ETAPA4.md) e
+[docs/ETAPA5.md](docs/ETAPA5.md).
 
 ---
 
@@ -42,6 +46,17 @@ Cena do personagem em Guapimirim: o mesmo `Player`, a mesma câmera, o mesmo
 streaming e a mesma cidade do jogo. `F5` mostra os controles de toque no PC, para
 conferir o layout mobile sem aparelho na mão. Dois carros nascem ao lado do ponto
 de partida para o teste de interação.
+
+### Dirigir
+
+```bash
+godot --path . gameplay/demo/vehicle_demo.tscn
+```
+
+Cena da Etapa 5: o mesmo mundo urbano, com dois carros na rua ao lado do
+nascimento. Aproxime-se, aperte `E`, e dirija pelas vias do Centro — `W`
+acelera, `S` freia e, parado, dá ré, `ESPAÇO` é freio de mão, `H` buzina e `V`
+alterna a câmera próxima e distante.
 
 ### Só terreno e streaming
 
@@ -89,6 +104,14 @@ OpenStreetMap — está declarado no `provenance` do payload, em
 | Trocar perfil gráfico | F1 | — |
 | Voltar ao início | R | — |
 | Tela cheia | F11 | — |
+| **No carro** | | |
+| Acelerar | W | botão **acelerar** |
+| Frear / dar ré | S | botão **freio/ré** (parado segurando, engata a ré) |
+| Direção | A / D | analógico da metade esquerda |
+| Freio de mão | ESPAÇO | botão **mão** |
+| Buzina | H | botão **buzina** |
+| Câmera próxima/distante | V | botão **câmera** |
+| Entrar / sair | E | botão **dirigir / sair** |
 
 As teclas são **ações nomeadas** (`ui/input/input_bindings.gd`) e podem ser
 remapeadas; o remapeamento é salvo em `user://settings.cfg`. A leitura é
@@ -213,8 +236,8 @@ Nada é baixado em tempo de execução.
 | Controles de PC e toque | prontos (ação nomeada, remapeamento, botões, pinça) |
 | Interação com o mundo | pronta (provedores: veículo, porta, grupo `interactable`) |
 | Terceira pessoa + câmera com colisão | pronto |
-| Veículos dirigíveis | pronto (VehicleBody3D) |
-| Trânsito com faixa, freio e semáforo | pronto |
+| Veículos dirigíveis | pronto (Etapa 5: DriveModel, ré, freio de mão, esterço por velocidade, saída pelo lado livre, buzina, câmera veicular) |
+| Trânsito com faixa, freio e semáforo | pronto (agentes próprios, ainda não dirigíveis) |
 | Pedestres em calçada | pronto |
 | Ciclo dia/noite | pronto |
 | Clima com efeito físico | pronto (chuva reduz aderência) |
@@ -227,9 +250,12 @@ Nada é baixado em tempo de execução.
 
 ## Limites conhecidos e honestos
 
-- **Este código não foi executado.** O ambiente onde ele foi escrito não tem
-  Godot. A suíte de testes existe justamente para que a primeira execução real
-  seja barata — rode-a antes de qualquer outra coisa.
+- **Este código roda em CI** (Godot 4.4 headless, suíte em
+  `.github/workflows/tests.yml`; o build web publica em
+  https://kkrr18.github.io/carioca-godot/). A primeira execução real, na
+  Etapa 4, revelou e corrigiu erros de parse; a suíte é a rede, não a prova
+  de jogabilidade — a dirigibilidade da Etapa 5 ainda não foi julada por uma
+  pessoa.
 - **Água e oceano** ainda não são renderizados: `water` existe no payload, mas
   não há malha nem colisão de água. Entra com a importação da linha de costa.
 - **Sem oclusão**: o LOD corta por distância; uma parede entre o jogador e a
@@ -257,6 +283,13 @@ Nada é baixado em tempo de execução.
   plano.
 - **Sem ragdoll, escalada ou natação.** Caminhar (`CTRL`/botão) reduz a
   velocidade; não muda a altura da cápsula.
+- **Veículos (Etapa 5)**: sem câmbio simulado, sem diferencial e sem dano;
+  a transferência de peso é a do `VehicleBody3D` nativo. A dirigibilidade
+  não foi ajustada por playtest e nenhum FPS foi medido com o carro em
+  movimento. **O som do carro é placeholder sintetizado** (tom de motor com
+  pitch por carga e buzina gerada em buffer); não há som de derrapagem nem
+  de colisão. Retrovisores não refletem e faróis não reagem ao dia/noite.
+  Carros de trânsito com IA ainda não são dirigíveis.
 - **O boneco não tem colisão própria**: a cápsula de 35 cm é que colide.
 - **Remapeamento só de teclado**, não de controle (gamepad).
 - **Nenhum FPS foi medido.** Os números dos perfis são calibragem inicial, não

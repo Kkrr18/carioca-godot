@@ -134,7 +134,12 @@ func _build_player() -> void:
 
 
 func _build_camera() -> void:
-	camera_rig = PlayerCamera.new()
+	# Etapa 5: a câmera do jogo é a veicular — subclasse da câmera do
+	# personagem. A pé ela se comporta exatamente como antes; dirigindo,
+	# acompanha atrás do carro com suavização por velocidade e o V alterna
+	# próxima/distante. Duas câmeras paralelas seriam duas candidatas a
+	# discordar; uma só, com dois modos, não.
+	camera_rig = VehicleCamera.new()
 	camera_rig.name = "PlayerCamera"
 	camera_rig.sensitivity = settings.mouse_sensitivity
 	camera_rig.set_invert_y(settings.camera_invert_y)
@@ -244,6 +249,7 @@ func _apply_quality(preset_name: String) -> void:
 		"streaming": streaming,
 		"traffic": traffic,
 		"pedestrians": pedestrians,
+		"vehicle_manager": vehicle_manager,
 		"viewport": get_viewport(),
 		"camera": camera_rig.camera if camera_rig != null else null,
 	})

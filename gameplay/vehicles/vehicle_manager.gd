@@ -10,6 +10,7 @@ var terrain: TerrainService = null
 var floating: FloatingOrigin = null
 var actor_parent: Node3D = null
 var max_vehicles: int = 8
+var default_profile: DrivingProfile = null
 
 var _vehicles: Array[Vehicle] = []
 var _wetness: float = 0.0
@@ -20,6 +21,17 @@ func setup(sector_terrain: TerrainService, origin: FloatingOrigin, parent: Node3
 	terrain = sector_terrain
 	floating = origin
 	actor_parent = parent
+	if default_profile == null:
+		default_profile = DrivingProfile.new()
+
+
+## Perfil vindo do preset de qualidade. Aplica aos carros vivos também:
+## trocar de perfil gráfico não deixa os carros discordando do preset.
+func apply_preset(preset: Dictionary) -> void:
+	default_profile = DrivingProfile.from_preset(preset)
+	for vehicle in _vehicles:
+		if is_instance_valid(vehicle):
+			vehicle.apply_drive_profile(default_profile)
 
 
 func _parent() -> Node3D:
@@ -36,6 +48,8 @@ func spawn_at(metric: Vector2, heading: float = 0.0, color: Color = Color(0.72, 
 	vehicle.floating = floating
 	vehicle.spawn_metric = metric
 	vehicle.body_color = color
+	if default_profile != null:
+		vehicle.apply_drive_profile(default_profile)
 	var height := terrain.height_at(metric) + 1.4
 	vehicle.position = floating.metric_to_local(metric, height)
 	vehicle.rotation.y = heading

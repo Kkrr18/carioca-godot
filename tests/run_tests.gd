@@ -39,6 +39,10 @@ const TEST_SCRIPTS: Array[String] = [
 	"res://tests/unit/test_player_interaction.gd",
 	"res://tests/unit/test_input_bindings.gd",
 	"res://tests/unit/test_player_camera.gd",
+	"res://tests/unit/test_driving_profile.gd",
+	"res://tests/unit/test_drive_model.gd",
+	"res://tests/unit/test_vehicle_camera.gd",
+	"res://tests/unit/test_vehicle_audio.gd",
 	"res://tests/integration/test_floating_origin.gd",
 	"res://tests/integration/test_sector_instance.gd",
 	"res://tests/integration/test_streaming_manager.gd",
@@ -46,6 +50,8 @@ const TEST_SCRIPTS: Array[String] = [
 	"res://tests/integration/test_urban_sector.gd",
 	"res://tests/integration/test_urban_streaming.gd",
 	"res://tests/integration/test_player_world.gd",
+	"res://tests/integration/test_vehicle_interaction.gd",
+	"res://tests/integration/test_vehicle_world.gd",
 ]
 
 

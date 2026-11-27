@@ -1,5 +1,84 @@
 # Changelog
 
+## 0.5.0 — Veículos
+
+Etapa 5: o personagem da Etapa 4 agora entra num carro e dirige pelas ruas do
+mundo real das Etapas 1–3. Relatório completo em [docs/ETAPA5.md](docs/ETAPA5.md).
+
+### Decisão de física (documentada)
+
+- **`VehicleBody3D` + `VehicleWheel3D` nativos, mantidos**: suspensão, atrito,
+  terreno e colisão vêm do servidor de física. Limitações assumidas: sem
+  câmbio simulado, sem diferencial, transferência de peso só a que o centro de
+  massa e a suspensão produzem.
+
+### Direção
+
+- **`DrivingProfile`**: motor, teto, freio, esterço, aderência, tração e
+  resistência do ar num objeto, com chaves `vehicle_*` nos três presets.
+- **`DriveModel`**: matemática pura da intenção — aceleração progressiva até o
+  teto, freio, ré só depois de parado segurando o freio por 0,25 s, freio de
+  mão que solta a traseira (aderência traseira a 35%), esterço que encurta com
+  a velocidade (100% parado, 32% acima de ~94 km/h) e retorno progressivo do
+  volante. Todo passo em função de `delta`, com teste de independência de
+  taxa de quadros.
+- **`Vehicle`** aplica o modelo ao corpo: marcha, freio de mão por roda, tração
+  `rwd`/`fwd`/`awd` e chuva interpolando a aderência como antes.
+
+### Entrar e sair
+
+- Entrada continua pelo `enter_vehicle()` existente (provedor e HUD
+  inalterados); o motorista agora **senta no banco** (`DRIVER_SEAT_OFFSET`), e
+  não sobre o teto.
+- Saída sonda os dois lados (`side_is_blocked`) e escolhe o lado livre mais
+  próximo; com os dois bloqueados, sai mesmo assim — nunca preso.
+- **`VehicleCamera`** é subclasse de `PlayerCamera` (uma câmera, dois modos):
+  suavização proporcional à velocidade, acompanhamento atrás do carro com
+  pausa de 2 s ao toque manual, próxima/distante (`V`/botão), e `MODE_CABIN`
+  reservado para a câmera interna futura.
+
+### Controles
+
+- Ações novas e remapeáveis: `carioca_handbrake` (ESPAÇO), `carioca_horn` (H),
+  `carioca_camera_mode` (V).
+- **Modo veículo no toque**: analógico vira volante; pedais acelerar/freio-ré,
+  freio de mão, buzina, câmera e sair como botões. O HUD troca o layout ao
+  entrar e sair.
+
+### Visual e áudio
+
+- **Casco do carro em 4 malhas**: capô, teto, porta-malas, colunas,
+  para-choques, grade, retrovisores, para-brisa/janelas transparentes, faróis
+  e lanternas emissivas; pneu e aro em materiais distintos, girando pelo
+  `VehicleWheel3D`. Sem asset externo; um modelo melhor entra por cima.
+- **`VehicleAudio`**: tom de motor com pitch por carga (`engine_tone`, puro e
+  testado), buzina de dois tons gerada em buffer. **Placeholders declarados**:
+  não há som de derrapagem (gancho `skid()` vazio) nem de colisão.
+
+### Mundo
+
+- O carro continua filho da raiz de atores: rebase e descarregamento de setor
+  nunca o movem ou o somem — agora travados por teste.
+- `QualityProfile` leva `vehicle_*` ao mundo inteiro via
+  `VehicleManager.apply_preset`.
+- **Demonstração**: `gameplay/demo/vehicle_demo.tscn` — o mundo urbano real,
+  dois carros, HUD de direção, e o bootstrap do jogo usa a câmera veicular.
+
+### Testes
+
+- 6 arquivos novos na suíte (`test_driving_profile`, `test_drive_model`,
+  `test_vehicle_camera`, `test_vehicle_audio`, `test_vehicle_interaction`,
+  `test_vehicle_world`). Dirigibilidade não foi julada por pessoa; o harness
+  headless não integra frames de física, então resposta real de suspensão e
+  colisão não tem número (detalhes em docs/ETAPA5.md §8).
+
+### Correções no caminho
+
+- Primeira execução real da suíte (CI) revelou erros de parse na Etapa 4
+  (`urban_props.gd`, `urban_vegetation.gd`, `test_payload_cache.gd`) e a
+  ausência da pasta-alvo do export web — corrigidos antes desta etapa.
+- O build web agora publica: **https://kkrr18.github.io/carioca-godot/**
+
 ## 0.4.0 — Personagem
 
 Etapa 4: o mundo das etapas anteriores passa a ter um personagem com movimento

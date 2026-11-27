@@ -66,17 +66,172 @@ static func car_body() -> Mesh:
 	return mesh
 
 
+# --- carro detalhado da Etapa 5 ----------------------------------------------
+#
+# Quatro malhas por carro, cada uma com um material próprio:
+#   car_shell()  pintura: capô, teto, porta-malas, laterais e colunas
+#   car_trim()   plástico escuro: para-choques, grade, retrovisores, saia
+#   car_glass()  para-brisa, vidros laterais e vigia traseiro (um mesh só)
+#   car_lights() faróis e lanternas, geometria neutra, cor vem do material
+# Tudo em caixas compostas por SurfaceTool — é provisório, mas lê como carro e
+# não como caixa. Um modelo melhor entra por cima sem tocar na física.
+
+
+## Casco pintado: chassi longo, capô, teto, porta-malas e colunas A/B/C.
+static func car_shell() -> Mesh:
+	if _cache.has("car_shell"):
+		return _cache["car_shell"]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var lower := BoxMesh.new()
+	lower.size = Vector3(1.84, 0.52, 4.3)
+	tool.append_from(lower, 0, Transform3D(Basis(), Vector3(0.0, 0.55, 0.0)))
+	var hood := BoxMesh.new()
+	hood.size = Vector3(1.76, 0.1, 1.34)
+	tool.append_from(hood, 0, Transform3D(Basis(), Vector3(0.0, 0.86, -1.34)))
+	var trunk := BoxMesh.new()
+	trunk.size = Vector3(1.76, 0.1, 1.1)
+	tool.append_from(trunk, 0, Transform3D(Basis(), Vector3(0.0, 0.86, 1.55)))
+	var roof := BoxMesh.new()
+	roof.size = Vector3(1.58, 0.08, 1.95)
+	tool.append_from(roof, 0, Transform3D(Basis(), Vector3(0.0, 1.5, 0.12)))
+	for side in [-0.87, 0.87]:
+		var pillar_a := BoxMesh.new()
+		pillar_a.size = Vector3(0.1, 0.62, 0.16)
+		tool.append_from(pillar_a, 0, Transform3D(Basis(), Vector3(side, 1.19, -0.9)))
+		var pillar_b := BoxMesh.new()
+		pillar_b.size = Vector3(0.1, 0.6, 0.14)
+		tool.append_from(pillar_b, 0, Transform3D(Basis(), Vector3(side, 1.2, 0.18)))
+		var pillar_c := BoxMesh.new()
+		pillar_c.size = Vector3(0.1, 0.55, 0.14)
+		tool.append_from(pillar_c, 0, Transform3D(Basis(), Vector3(side, 1.17, 1.06)))
+	var sill := BoxMesh.new()
+	sill.size = Vector3(1.9, 0.14, 3.4)
+	tool.append_from(sill, 0, Transform3D(Basis(), Vector3(0.0, 0.34, 0.1)))
+	var mesh := tool.commit()
+	_cache["car_shell"] = mesh
+	return mesh
+
+
+## Plástico escuro: para-choques, grade, alojamento dos retrovisores e para-lama.
+static func car_trim() -> Mesh:
+	if _cache.has("car_trim"):
+		return _cache["car_trim"]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var front := BoxMesh.new()
+	front.size = Vector3(1.86, 0.34, 0.24)
+	tool.append_from(front, 0, Transform3D(Basis(), Vector3(0.0, 0.5, -2.26)))
+	var rear := BoxMesh.new()
+	rear.size = Vector3(1.86, 0.34, 0.22)
+	tool.append_from(rear, 0, Transform3D(Basis(), Vector3(0.0, 0.5, 2.24)))
+	var grille := BoxMesh.new()
+	grille.size = Vector3(0.94, 0.22, 0.06)
+	tool.append_from(grille, 0, Transform3D(Basis(), Vector3(0.0, 0.72, -2.2)))
+	for side in [-0.96, 0.96]:
+		var mirror := BoxMesh.new()
+		mirror.size = Vector3(0.16, 0.12, 0.08)
+		tool.append_from(mirror, 0, Transform3D(Basis(), Vector3(side * 1.06, 1.06, -0.78)))
+	var mesh := tool.commit()
+	_cache["car_trim"] = mesh
+	return mesh
+
+
+## Vidros num mesh só: para-brisa inclinado, vigia traseiro inclinado e duas
+## janelas laterais. O material cuida da transparência.
+static func car_glass() -> Mesh:
+	if _cache.has("car_glass"):
+		return _cache["car_glass"]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var windshield := BoxMesh.new()
+	windshield.size = Vector3(1.5, 0.62, 0.06)
+	windshield.transform = Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-38.0)), Vector3(0.0, 1.24, -0.82))
+	tool.append_from(windshield, 0, Transform3D.IDENTITY)
+	var rear_window := BoxMesh.new()
+	rear_window.size = Vector3(1.46, 0.52, 0.06)
+	rear_window.transform = Transform3D(Basis(Vector3.RIGHT, deg_to_rad(34.0)), Vector3(0.0, 1.24, 1.02))
+	tool.append_from(rear_window, 0, Transform3D.IDENTITY)
+	for side in [-0.8, 0.8]:
+		var front_window := BoxMesh.new()
+		front_window.size = Vector3(0.05, 0.5, 1.0)
+		tool.append_from(front_window, 0, Transform3D(Basis(), Vector3(side, 1.25, -0.36)))
+		var rear_window_side := BoxMesh.new()
+		rear_window_side.size = Vector3(0.05, 0.46, 0.84)
+		tool.append_from(rear_window_side, 0, Transform3D(Basis(), Vector3(side, 1.24, 0.62)))
+	var mesh := tool.commit()
+	_cache["car_glass"] = mesh
+	return mesh
+
+
+## Par de luzes (uma função, dois usos): faróis e lanternas têm a mesma
+## geometria e materiais diferentes.
+static func car_lights(width: float = 0.44) -> Mesh:
+	var key := "car_lights_%.2f" % width
+	if _cache.has(key):
+		return _cache[key]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for side in [-1.0, 1.0]:
+		var light := BoxMesh.new()
+		light.size = Vector3(width, 0.16, 0.08)
+		tool.append_from(light, 0, Transform3D(Basis(), Vector3(side * 0.62, 0.78, -2.3)))
+	var mesh := tool.commit()
+	_cache[key] = mesh
+	return mesh
+
+
+## Roda com aro: pneu preto + disco central mais claro, um mesh só.
 static func wheel() -> Mesh:
 	if _cache.has("wheel"):
 		return _cache["wheel"]
-	var cylinder := CylinderMesh.new()
-	cylinder.top_radius = 0.34
-	cylinder.bottom_radius = 0.34
-	cylinder.height = 0.24
-	cylinder.radial_segments = 10
-	cylinder.rings = 1
-	_cache["wheel"] = cylinder
-	return cylinder
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var tire := CylinderMesh.new()
+	tire.top_radius = 0.34
+	tire.bottom_radius = 0.34
+	tire.height = 0.24
+	tire.radial_segments = 12
+	tire.rings = 1
+	tool.append_from(tire, 0, Transform3D.IDENTITY)
+	var rim := CylinderMesh.new()
+	rim.top_radius = 0.19
+	rim.bottom_radius = 0.19
+	rim.height = 0.26
+	rim.radial_segments = 9
+	rim.rings = 1
+	tool.append_from(rim, 0, Transform3D.IDENTITY)
+	var mesh := tool.commit()
+	_cache["wheel"] = mesh
+	return mesh
+
+
+## Pneu sozinho (goma preta). O aro vem em `wheel_rim()`, com material próprio.
+static func wheel_tire() -> Mesh:
+	if _cache.has("wheel_tire"):
+		return _cache["wheel_tire"]
+	var tire := CylinderMesh.new()
+	tire.top_radius = 0.34
+	tire.bottom_radius = 0.34
+	tire.height = 0.24
+	tire.radial_segments = 12
+	tire.rings = 1
+	_cache["wheel_tire"] = tire
+	return tire
+
+
+static func wheel_rim() -> Mesh:
+	if _cache.has("wheel_rim"):
+		return _cache["wheel_rim"]
+	var rim := CylinderMesh.new()
+	rim.top_radius = 0.19
+	rim.bottom_radius = 0.19
+	rim.height = 0.27
+	rim.radial_segments = 9
+	rim.rings = 1
+	_cache["wheel_rim"] = rim
+	return rim
+
 
 
 static func pedestrian_body() -> Mesh:

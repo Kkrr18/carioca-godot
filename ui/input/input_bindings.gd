@@ -29,6 +29,11 @@ const ACTION_INTERACT := "carioca_interact"
 const ACTION_CAMERA_RESET := "carioca_camera_reset"
 const ACTION_ZOOM_IN := "carioca_zoom_in"
 const ACTION_ZOOM_OUT := "carioca_zoom_out"
+## Etapa 5 — veículo. O espaço é freio de mão no carro e pulo a pé: ações
+## distintas com a mesma tecla padrão é o que mantém os contextos separados.
+const ACTION_HANDBRAKE := "carioca_handbrake"
+const ACTION_HORN := "carioca_horn"
+const ACTION_CAMERA_MODE := "carioca_camera_mode"
 
 const ACTIONS: Array[String] = [
 	ACTION_FORWARD,
@@ -42,6 +47,9 @@ const ACTIONS: Array[String] = [
 	ACTION_CAMERA_RESET,
 	ACTION_ZOOM_IN,
 	ACTION_ZOOM_OUT,
+	ACTION_HANDBRAKE,
+	ACTION_HORN,
+	ACTION_CAMERA_MODE,
 ]
 
 ## Teclas padrão por ação. Valores múltiplos significam "qualquer uma vale".
@@ -57,6 +65,9 @@ const DEFAULTS := {
 	ACTION_CAMERA_RESET: [KEY_C],
 	ACTION_ZOOM_IN: [KEY_EQUAL, KEY_KP_ADD],
 	ACTION_ZOOM_OUT: [KEY_MINUS, KEY_KP_SUBTRACT],
+	ACTION_HANDBRAKE: [KEY_SPACE],
+	ACTION_HORN: [KEY_H],
+	ACTION_CAMERA_MODE: [KEY_V],
 }
 
 const LABELS := {
@@ -71,6 +82,9 @@ const LABELS := {
 	ACTION_CAMERA_RESET: "recentralizar câmera",
 	ACTION_ZOOM_IN: "aproximar",
 	ACTION_ZOOM_OUT: "afastar",
+	ACTION_HANDBRAKE: "freio de mão",
+	ACTION_HORN: "buzina",
+	ACTION_CAMERA_MODE: "câmera do carro",
 }
 
 static var _registered: bool = false

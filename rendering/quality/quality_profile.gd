@@ -89,6 +89,13 @@ const PRESETS := {
 		"camera_smoothing": 1.15,
 		"camera_collision_margin": 0.4,
 		"camera_sensitivity": 0.0026,
+		# Etapa 5 — veículo. O celular tem motor e teto menores: o mundo é o
+		# mesmo, o carro só não precisa voar.
+		"vehicle_engine_force": 1250.0,
+		"vehicle_max_speed": 28.0,
+		"vehicle_brake_force": 11.0,
+		"vehicle_max_steer": 0.52,
+		"vehicle_grip": 3.0,
 	},
 	"pc_medium": {
 		"view_radius": 3,
@@ -133,6 +140,11 @@ const PRESETS := {
 		"camera_smoothing": 1.0,
 		"camera_collision_margin": 0.35,
 		"camera_sensitivity": 0.0022,
+		"vehicle_engine_force": 1600.0,
+		"vehicle_max_speed": 33.0,
+		"vehicle_brake_force": 12.0,
+		"vehicle_max_steer": 0.52,
+		"vehicle_grip": 3.0,
 	},
 	"pc_high": {
 		"view_radius": 4,
@@ -177,6 +189,11 @@ const PRESETS := {
 		"camera_smoothing": 0.95,
 		"camera_collision_margin": 0.3,
 		"camera_sensitivity": 0.0020,
+		"vehicle_engine_force": 1700.0,
+		"vehicle_max_speed": 35.0,
+		"vehicle_brake_force": 12.0,
+		"vehicle_max_steer": 0.54,
+		"vehicle_grip": 3.1,
 	},
 }
 
@@ -210,6 +227,11 @@ static func apply(preset_name: String, context: Dictionary) -> void:
 	var pedestrians: PedestrianManager = context.get("pedestrians")
 	if pedestrians != null:
 		pedestrians.max_pedestrians = int(preset["max_pedestrians"])
+
+	# Etapa 5: os carros do mundo seguem o mesmo preset que o resto do jogo.
+	var vehicles: VehicleManager = context.get("vehicle_manager")
+	if vehicles != null:
+		vehicles.apply_preset(preset)
 
 	var viewport: Viewport = context.get("viewport")
 	if viewport != null:
