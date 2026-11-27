@@ -14,7 +14,9 @@
   `ProtagonistModel` carrega o `.fbx` importado, normaliza escala para 1,78 m e
   pivô nos pés pela AABB combinada, aplica a pose procedural no corpo inteiro e
   entrega o `AnimationPlayer` da cena ao `CharacterAnimator.bind_player()` — que
-  só toca animação cujo nome casa com o estado (`idle`, `walk`, …). Sem o import,
+  casa os nomes reais das animações com os estados por apelido (`walking` →
+  `walk`, `andar`, `correr`, …); estado sem correspondente fica na pose
+  procedural. Sem o import,
   o `PlaceholderCharacter` segue como fallback e nada quebra.
 - **O preset de exportação Web deixa de excluir `*.fbx`**, para o protagonista
   entrar no build web.

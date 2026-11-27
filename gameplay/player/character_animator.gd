@@ -22,6 +22,23 @@ extends RefCounted
 
 const STRIDE_LENGTH_BASE := 1.7
 
+## Apelidos que modelos costumam dar às animações de cada estado. O vínculo
+## (`bind_player`) casa o nome real do `AnimationPlayer` com o estado: primeiro
+## igualdade exata, depois contém — em minúsculas. "walking" casa com "walk",
+## "andar" também. Nada aqui inventa animação: estado sem correspondente fica
+## na pose procedural.
+const ANIMATION_ALIASES := {
+	"idle": ["idle", "parado", "stand", "breathing", "ocioso"],
+	"walk": ["walk", "andar", "walking", "caminhar"],
+	"run": ["run", "correr", "running", "corrida"],
+	"sprint": ["sprint", "dash"],
+	"jump": ["jump", "pular", "pulo", "jumping"],
+	"fall": ["fall", "falling", "cair", "queda"],
+	"land": ["land", "landing", "aterriss", "aterriza"],
+	"turn": ["turn", "turning", "virar", "giro"],
+	"interact": ["interact", "interaction", "usar", "pickup"],
+}
+
 var stride_phase: float = 0.0
 var clock: float = 0.0
 var pose: Dictionary = {}
@@ -30,6 +47,7 @@ var animation_tree: AnimationTree = null
 var animation_player: AnimationPlayer = null
 
 var _state_states: Array[StringName] = []
+var _state_animations: Dictionary = {}
 var _last_state: int = -1
 var _has_transition_request: bool = false
 
@@ -155,6 +173,37 @@ func bind_tree(tree: AnimationTree) -> void:
 
 func bind_player(player: AnimationPlayer) -> void:
 	animation_player = player
+	_state_animations = {}
+	if animation_player == null:
+		return
+	_state_animations = _map_available_animations()
+
+
+## Casa os nomes reais de animação do player ligado com os nomes de estado.
+## Devolve `{ "walk": StringName("Walking"), ... }` — só o que existe de fato.
+func _map_available_animations() -> Dictionary:
+	var available := animation_player.get_animation_list()
+	if available.is_empty():
+		return {}
+	var lowered: Array[String] = []
+	for anim in available:
+		lowered.append(str(anim).to_lower())
+	var mapped := {}
+	for state_name in ANIMATION_ALIASES:
+		var aliases: Array = ANIMATION_ALIASES[state_name]
+		# Igualdade exata primeiro: "idle" vence "idle_in_place" quando houver.
+		for pass_contains in [false, true]:
+			for alias in aliases:
+				for i in range(lowered.size()):
+					var match_found := lowered[i].contains(alias) if pass_contains else lowered[i] == alias
+					if match_found:
+						mapped[state_name] = StringName(available[i])
+						break
+				if mapped.has(state_name):
+					break
+			if mapped.has(state_name):
+				break
+	return mapped
 
 
 func is_bound() -> bool:
@@ -169,9 +218,16 @@ func available_states() -> Array[StringName]:
 
 func _play_animation(state: int) -> void:
 	var wanted := animation_for(state)
-	if animation_player != null and animation_player.is_inside_tree() and animation_player.has_animation(wanted):
-		animation_player.play(wanted)
-		return
+	if animation_player != null and animation_player.is_inside_tree():
+		# Primeiro o apelido mapeado no vínculo ("Walking" → walk); depois o
+		# nome exato do estado, caso o modelo já use a convenção do projeto.
+		var mapped: StringName = _state_animations.get(str(wanted), StringName())
+		if mapped != StringName() and animation_player.has_animation(mapped):
+			animation_player.play(mapped)
+			return
+		if animation_player.has_animation(wanted):
+			animation_player.play(wanted)
+			return
 	if animation_tree == null:
 		return
 	if not _state_states.is_empty() and not _state_states.has(wanted):
@@ -190,10 +246,13 @@ func reset() -> void:
 	pose["squash"] = 1.0
 
 func describe() -> String:
+	var bound := "" if not is_bound() else " · animação importada ligada%s" % [
+		"" if _state_animations.is_empty() else " (%d mapeadas)" % _state_animations.size()
+	]
 	return "fase %.2f rad · perna %.2f · braço %.2f · inclinação %.2f%s" % [
 		stride_phase,
 		float(pose.get("leg_swing", 0.0)),
 		float(pose.get("arm_swing", 0.0)),
 		float(pose.get("lean", 0.0)),
-		"" if not is_bound() else " · animação importada ligada",
+		bound,
 	]
