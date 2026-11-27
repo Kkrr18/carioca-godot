@@ -32,6 +32,18 @@ extends RefCounted
 ##   urban_max_vegetation    teto de instâncias de vegetação por setor
 ##   urban_max_props         teto de instâncias de mobiliário por setor
 ##   urban_landmark_radius   reserva mínima em volta de ponto de referência
+##
+## Chaves de personagem e câmera (Etapa 4) — lidas por `MovementProfile.from_preset`
+## e por `PlayerCamera.apply_preset`:
+##   player_walk_speed / player_run_speed / player_sprint_speed   m/s
+##   player_jump_velocity   impulso do pulo, m/s
+##   player_turn_rate       giro do corpo em direção ao movimento, rad/s
+##   player_substep_distance  avanço máximo por `move_and_slide`, em metros
+##   camera_distance        distância de repouso do braço da câmera
+##   camera_min_distance / camera_max_distance   limites, inclusive de zoom
+##   camera_smoothing       multiplicador de suavização do pivô
+##   camera_collision_margin folga entre câmera e parede
+##   camera_sensitivity     sensibilidade do mouse
 
 const PRESETS := {
 	"mobile": {
@@ -65,6 +77,18 @@ const PRESETS := {
 		"urban_max_vegetation": 90,
 		"urban_max_props": 70,
 		"urban_landmark_radius": 12.0,
+		"player_walk_speed": 4.2,
+		"player_run_speed": 7.4,
+		"player_sprint_speed": 9.8,
+		"player_jump_velocity": 5.4,
+		"player_turn_rate": 13.0,
+		"player_substep_distance": 0.45,
+		"camera_distance": 4.0,
+		"camera_min_distance": 1.6,
+		"camera_max_distance": 6.8,
+		"camera_smoothing": 1.15,
+		"camera_collision_margin": 0.4,
+		"camera_sensitivity": 0.0026,
 	},
 	"pc_medium": {
 		"view_radius": 3,
@@ -97,6 +121,18 @@ const PRESETS := {
 		"urban_max_vegetation": 220,
 		"urban_max_props": 180,
 		"urban_landmark_radius": 16.0,
+		"player_walk_speed": 4.2,
+		"player_run_speed": 7.8,
+		"player_sprint_speed": 10.4,
+		"player_jump_velocity": 5.4,
+		"player_turn_rate": 13.0,
+		"player_substep_distance": 0.45,
+		"camera_distance": 4.4,
+		"camera_min_distance": 1.6,
+		"camera_max_distance": 7.5,
+		"camera_smoothing": 1.0,
+		"camera_collision_margin": 0.35,
+		"camera_sensitivity": 0.0022,
 	},
 	"pc_high": {
 		"view_radius": 4,
@@ -129,6 +165,18 @@ const PRESETS := {
 		"urban_max_vegetation": 320,
 		"urban_max_props": 260,
 		"urban_landmark_radius": 18.0,
+		"player_walk_speed": 4.2,
+		"player_run_speed": 8.2,
+		"player_sprint_speed": 11.0,
+		"player_jump_velocity": 5.6,
+		"player_turn_rate": 14.0,
+		"player_substep_distance": 0.45,
+		"camera_distance": 4.6,
+		"camera_min_distance": 1.6,
+		"camera_max_distance": 8.0,
+		"camera_smoothing": 0.95,
+		"camera_collision_margin": 0.3,
+		"camera_sensitivity": 0.0020,
 	},
 }
 

@@ -3,14 +3,18 @@
 Mundo aberto do Estado do Rio de Janeiro — Godot 4.4, GDScript, coordenadas
 geográficas reais, streaming contínuo e escala 1:1 como objetivo.
 
-**Versão atual: 0.3.0 — Geração urbana.** Não é um jogo terminado: é a base
-técnica que sustenta o estado inteiro, com um protótipo jogável em Guapimirim e
-Magé em cima dela. A Etapa 2 acrescentou LOD por distância, prioridade de carga
-na direção do movimento, cache de payload, orçamento de memória e retentativa de
-carga. A Etapa 3 acrescentou a cidade: quadras extraídas da geometria das ruas,
-lotes, sete tipologias de edificação com fachada por pavimento, calçada,
-mobiliário, vegetação e pontos de referência. Os relatórios estão em
-[docs/ETAPA2.md](docs/ETAPA2.md) e [docs/ETAPA3.md](docs/ETAPA3.md).
+**Versão atual: 0.4.0 — Personagem.** Não é um jogo terminado: é a base técnica
+que sustenta o estado inteiro, com um protótipo jogável em Guapimirim e Magé em
+cima dela. A Etapa 2 acrescentou LOD por distância, prioridade de carga na direção
+do movimento, cache de payload, orçamento de memória e retentativa de carga. A
+Etapa 3 acrescentou a cidade: quadras extraídas da geometria das ruas, lotes, sete
+tipologias de edificação com fachada por pavimento, calçada, mobiliário, vegetação
+e pontos de referência. A Etapa 4 acrescentou o personagem: motor de movimento
+com caminhada, corrida e sprint, *coyote time*, *buffer* de pulo, rampa, estados
+explícitos, câmera com zoom e suavização por eixo, controles de PC e toque com
+ação nomeada e remapeamento, e interação extensível por provedores. Os relatórios
+estão em [docs/ETAPA2.md](docs/ETAPA2.md), [docs/ETAPA3.md](docs/ETAPA3.md) e
+[docs/ETAPA4.md](docs/ETAPA4.md).
 
 ---
 
@@ -27,6 +31,17 @@ anda: cada bloco de 512 m é gerado de forma determinística e carregado em
 segundo plano. A resolução do terreno cai com a distância (LOD 0–3, com saia
 anti-rachadura nas bordas) e o que está à frente do movimento começa a carregar
 antes, que é o que evita dirigir para dentro de mundo vazio.
+
+### Personagem
+
+```bash
+godot --path . gameplay/demo/player_demo.tscn
+```
+
+Cena do personagem em Guapimirim: o mesmo `Player`, a mesma câmera, o mesmo
+streaming e a mesma cidade do jogo. `F5` mostra os controles de toque no PC, para
+conferir o layout mobile sem aparelho na mão. Dois carros nascem ao lado do ponto
+de partida para o teste de interação.
 
 ### Só terreno e streaming
 
@@ -59,11 +74,14 @@ OpenStreetMap — está declarado no `provenance` do payload, em
 
 | Ação | Teclado | Toque |
 |---|---|---|
-| Mover | WASD / setas | analógico virtual (metade esquerda) |
-| Correr | SHIFT | — |
-| Pular | ESPAÇO | toque curto na metade direita |
+| Mover | WASD / setas | analógico virtual (metade esquerda, amplitude = andar/correr) |
+| Caminhar | CTRL | — |
+| Correr / sprint | SHIFT | botão **correr** (alterna) |
+| Pular | ESPAÇO | botão **pular** ou toque curto na área de olhar |
 | Olhar | mouse | arrastar na metade direita |
-| Interagir (carro, porta) | E | — |
+| Zoom da câmera | roda do mouse / + e − | pinça de dois dedos |
+| Recentralizar câmera | C | — |
+| Interagir (carro, porta) | E | botão **interagir**, só quando há algo ao alcance |
 | Diagnóstico | F3 | — |
 | Salvar / carregar | F5 / F9 | — |
 | Trocar clima | F6 | — |
@@ -71,6 +89,10 @@ OpenStreetMap — está declarado no `provenance` do payload, em
 | Trocar perfil gráfico | F1 | — |
 | Voltar ao início | R | — |
 | Tela cheia | F11 | — |
+
+As teclas são **ações nomeadas** (`ui/input/input_bindings.gd`) e podem ser
+remapeadas; o remapeamento é salvo em `user://settings.cfg`. A leitura é
+resiliente: sem ação registrada, a tecla padrão continua valendo.
 
 ## Testes
 
@@ -97,6 +119,18 @@ construção sobre a pista, variedade de tipologia, vegetação e mobiliário fo
 asfalto, ponto de referência com confiança declarada, determinismo do payload
 urbano, contrato da Etapa 1 preservado, e a cidade sob o streaming carregando,
 descarregando e voltando idêntica.
+
+Na Etapa 4 entram: aceleração até a velocidade alvo, caminhada e sprint distintos,
+amplitude do analógico, desaceleração, gravidade e velocidade terminal, pulo só no
+chão, *coyote time* e o seu fim, *buffer* de pulo, aterrissagem medida, rampa
+rendendo menos, corpo congelado, fatiamento do passo, independência de taxa de
+quadros, estados por velocidade, prioridade da aterrissagem, veículo e desligado
+por cima de tudo, pose de animação, boneco com quatro juntas, interação por
+prioridade, provedor quebrado não derrubando os outros, ações nomeadas e
+remapeamento, limites de zoom e inclinação da câmera, **`yaw` como propriedade**,
+e o personagem no mundo: nascer, pousar, andar nas quatro direções, pular e
+voltar, **atravessar fronteira de setor** e **sobreviver ao rebase do floating
+origin**.
 
 ## Ferramentas
 
@@ -172,6 +206,12 @@ Nada é baixado em tempo de execução.
 | Relevo: apoio e embasamento | pronto (prédio apoia no canto mais baixo, vão preenchido) |
 | Prédios procedurais com fachada por andar | pronto (mantido como caminho sem dado urbano) |
 | Vegetação e mobiliário (MultiMesh) | pronto |
+| Motor de movimento do personagem | pronto (caminhada, corrida, sprint, rampa, coyote, buffer) |
+| Estados do personagem | prontos (10 estados explícitos, resolvidos por prioridade) |
+| Câmera em terceira pessoa | pronta (suavização por eixo, zoom, colisão, inversão) |
+| Animação | procedural funcional; árvore importada com gancho pronto (sem asset) |
+| Controles de PC e toque | prontos (ação nomeada, remapeamento, botões, pinça) |
+| Interação com o mundo | pronta (provedores: veículo, porta, grupo `interactable`) |
 | Terceira pessoa + câmera com colisão | pronto |
 | Veículos dirigíveis | pronto (VehicleBody3D) |
 | Trânsito com faixa, freio e semáforo | pronto |
@@ -210,6 +250,15 @@ Nada é baixado em tempo de execução.
   constrói ali) e bloqueiam vegetação, mas o que se vê é o terreno.
 - **Calçada não tem colisão própria**: é superfície visual sobre a colisão do
   terreno. Portão de muro não abre.
+- **Não há modelo humano com animações licenciadas.** O boneco é provisório, com
+  doze nós e quatro juntas, e a pose é procedural. A camada de animação importada
+  existe (`CharacterAnimator.bind_tree`) e não está ligada a nenhum asset. Não há
+  IK, pé fixo no chão nem *motion matching*; em rampa a pose não se ajusta ao
+  plano.
+- **Sem ragdoll, escalada ou natação.** Caminhar (`CTRL`/botão) reduz a
+  velocidade; não muda a altura da cápsula.
+- **O boneco não tem colisão própria**: a cápsula de 35 cm é que colide.
+- **Remapeamento só de teclado**, não de controle (gamepad).
 - **Nenhum FPS foi medido.** Os números dos perfis são calibragem inicial, não
   resultado de benchmark; a meta de 30 FPS no iPhone 12 continua sendo meta.
 - **Colisão de prédio é caixa**, não a geometria da fachada.
@@ -217,7 +266,10 @@ Nada é baixado em tempo de execução.
   decisão de orçamento para o iPhone 12.
 - **Minimapa é 2D**, desenhado a partir do payload, não uma câmera renderizada.
 - **Sem menu**: o jogo entra direto no mundo; save e perfil estão em teclas.
-- Os quatro `.fbx` na raiz do repositório não são usados por nada aqui.
+- Os `.fbx` na raiz do repositório não são usados por nada aqui. Os quatro
+  `character_*.fbx` são da Etapa 1; `The_Corporate_High-Flier*.fbx` e
+  `fps-buildings-env-kit-main.zip` apareceram no repositório durante a Etapa 4 e
+  não são referenciados por código nenhum.
 
 ## Estrutura
 
@@ -225,12 +277,12 @@ Nada é baixado em tempo de execução.
 core/         bootstrap, eventos, configuração, plataforma, utilitários
 world/        geografia, projeção, elevação, terreno, setores, streaming, LOD, demo
 city/         geração: reticulação procedural (E1) e camada urbana (E3) + demo
-gameplay/     jogador, câmera, veículos
+gameplay/     jogador, movimento, animação, câmera, interação, veículos, demo
 ai/           grafo de vias, trânsito, pedestres
 interiors/    construtor do apartamento e gerência de interiores
 systems/      dia/noite, clima, áudio, persistência
 rendering/    materiais, malhas primitivas, perfis de qualidade
-ui/           HUD, minimapa, controles de toque
+ui/           HUD, minimapa, controles de toque, ações de entrada
 data/         municípios, traçado urbano, pontos de referência, setores, OSM, elevação
 tools/        importador OSM, bake de setores, validação, ferramentas urbanas
 tests/        suíte headless

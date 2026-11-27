@@ -151,21 +151,26 @@ func debug_visible() -> bool:
 func _update_prompt() -> void:
 	if prompt_label == null or player == null:
 		return
-	if player.current_vehicle != null:
-		prompt_label.text = "E   sair do veículo"
-		return
-	if interior_manager != null and interior_manager.is_inside():
-		prompt_label.text = "E   sair do apartamento"
-		return
-	if vehicle_manager != null and vehicle_manager.nearest(player.global_position, Player.VEHICLE_RADIUS) != null:
-		prompt_label.text = "E   dirigir"
-		return
-	if interior_manager != null and floating != null:
-		var door := interior_manager.find_nearby_door(floating.viewer_metric(), Player.DOOR_RADIUS)
-		if not door.is_empty():
-			prompt_label.text = "E   entrar"
-			return
-	prompt_label.text = ""
+	# A partir da Etapa 4 o jogador publica o que está ao alcance, e o HUD só
+	# repete. Sem isso, o HUD mantinha uma segunda cópia da regra de interação —
+	# duas cópias que podiam discordar sobre o que o E faz.
+	var prompt := ""
+	if player.has_method("interaction_prompt"):
+		prompt = str(player.interaction_prompt())
+	if prompt.is_empty():
+		if player.current_vehicle != null:
+			prompt = "E   sair do veículo"
+		elif interior_manager != null and interior_manager.is_inside():
+			prompt = "E   sair do apartamento"
+		elif vehicle_manager != null and vehicle_manager.nearest(player.global_position, Player.VEHICLE_RADIUS) != null:
+			prompt = "E   dirigir"
+		elif interior_manager != null and floating != null:
+			var door := interior_manager.find_nearby_door(floating.viewer_metric(), Player.DOOR_RADIUS)
+			if not door.is_empty():
+				prompt = "E   entrar"
+	prompt_label.text = prompt
+	if touch != null:
+		touch.set_interaction(prompt)
 
 
 func _update_debug() -> void:
@@ -235,6 +240,11 @@ func _update_debug() -> void:
 	])
 	if settings != null:
 		lines.append("perfil %s" % settings.quality_preset)
+	if player != null and player.has_method("describe"):
+		var camera_text := "—"
+		if player.camera_rig != null:
+			camera_text = player.camera_rig.describe()
+		lines.append("personagem %s   câmera %s" % [str(player.describe()), camera_text])
 	debug_label.text = "\n".join(lines)
 
 

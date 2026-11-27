@@ -1,5 +1,99 @@
 # Changelog
 
+## 0.4.0 — Personagem
+
+Etapa 4: o mundo das etapas anteriores passa a ter um personagem com movimento
+próprio, câmera de terceira pessoa, animação e interação. Relatório completo em
+[docs/ETAPA4.md](docs/ETAPA4.md).
+
+### Correção de defeito da Etapa 1
+
+- **`camera_rig.yaw()` era chamado como método**, mas `yaw` é variável em
+  `PlayerCamera`. Isso levantava erro a cada passo de física sempre que havia
+  câmera — no jogo inteiro. O movimento só funcionava sem câmera ativa. A
+  correção está em `Player._camera_yaw()`, e há teste que trava a propriedade
+  porque `InteriorManager.enter()` escreve `camera_rig.yaw = PI`.
+
+### Movimento
+
+- **`MovementProfile`**: velocidades, acelerações, janelas de tempo e fator de
+  fatiamento num objeto, com valores por perfil de qualidade.
+- **`PlayerMotor`**: a matemática do movimento separada da cena — testável sem
+  física, sem frame e sem flakiness.
+- **Caminhada, corrida e sprint** como três intenções; no teclado, `CTRL`, `W` e
+  `SHIFT+W`; no toque, amplitude do analógico mais botão de sprint.
+- **Aceleração e desaceleração em taxas diferentes**, para o personagem parar ao
+  soltar a entrada em vez de deslizar.
+- **Rampa**: velocidade desejada projetada no plano do chão — subir ladeira rende
+  menos.
+- **Coyote time (0,12 s) e buffer de pulo (0,14 s)**.
+- **Aterrissagem medida uma vez**, na transição ar → chão, com a velocidade de
+  impacto copiada.
+- **Fatiamento do passo** (`substeps_for`): conta pura; só entra acima de 0,45 m
+  por passo, então a 60 Hz e 10 m/s continua um `move_and_slide`.
+
+### Estados
+
+- **`MovementStateMachine`**: 10 estados explícitos resolvidos por prioridade
+  (veículo, desligado, interação, ar, aterrissagem, virar, velocidade).
+- A janela de interação vive no objeto, e `update` sobrescreve o valor do
+  contexto — o estado não depende de cópia do temporizador.
+
+### Animação
+
+- **`CharacterAnimator`**: pose procedural derivada de estado e velocidade; e
+  gancho para `AnimationTree`/`AnimationPlayer` importados, sem fingir asset.
+- **`PlaceholderCharacter`**: boneco provisório com doze nós e quatro juntas de
+  verdade (membros opostos, subida, inclinação, torção, esmagamento).
+- **Nenhum modelo humano licenciado.** Os `.fbx` da raiz não têm licença
+  declarada e não são usados.
+
+### Câmera
+
+- **Suavização por eixo**: horizontal rápida, vertical lenta — sem sacudir em
+  degrau.
+- **Encurtar imediato, alongar suave**: parede entre câmera e jogador não vira
+  interior de parede na tela.
+- **Zoom** por roda, teclas e pinça; **ombro proporcional** à distância.
+- Inversão de eixo Y e sensibilidade das preferências.
+
+### Interação
+
+- **`PlayerInteraction` por provedores**: veículo, porta e grupo `interactable`.
+  Prioridade primeiro, distância depois.
+- **O HUD deixou de ter a cópia da cadeia de interação** — lê
+  `Player.interaction_prompt()`.
+- **Cadeia legada mantida** quando nenhum provedor responde.
+
+### Controles
+
+- **`InputBindings`**: onze ações nomeadas, teclas padrão, registro idempotente
+  no `InputMap`, remapeamento salvo em `user://settings.cfg`.
+- **Leitura resiliente**: sem ação registrada, a tecla padrão continua valendo.
+- **Controles de toque reescritos**: botões de pulo, sprint e interação
+  desenhados; pinça para zoom; layout por tamanho de tela; lógica testável por
+  números.
+
+### Integração
+
+- `Player` preserva a API pública da Etapa 1 e ganhou `step_physics()` para o
+  teste conduzir o corpo pelo mesmo caminho do jogo.
+- `QualityProfile` ganhou treze chaves de personagem e câmera por perfil.
+- `CariocaSettings` passou a guardar câmera, toque e remapeamento.
+- Nada de terreno, streaming, geração urbana ou interior foi alterado.
+
+### Testes
+
+Oito arquivos novos, cerca de 90 métodos: motor, estados, animação, boneco,
+interação, ações nomeadas, câmera e o personagem no mundo (fronteira de setor e
+rebase do floating origin).
+
+### Limites que continuam
+
+- Nada foi executado neste ambiente; nenhum FPS foi medido.
+- Animação por asset não existe: só a procedural roda.
+- Sem IK, ragdoll, escalada ou natação; remapeamento só de teclado.
+
 ## 0.3.0 — Geração Urbana
 
 Etapa 3: a infraestrutura geográfica e de streaming das etapas anteriores passa a

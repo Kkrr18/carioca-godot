@@ -32,12 +32,20 @@ const TEST_SCRIPTS: Array[String] = [
 	"res://tests/unit/test_urban_furniture.gd",
 	"res://tests/unit/test_landmark_registry.gd",
 	"res://tests/unit/test_urban_generator.gd",
+	"res://tests/unit/test_movement_state_machine.gd",
+	"res://tests/unit/test_player_motor.gd",
+	"res://tests/unit/test_character_animator.gd",
+	"res://tests/unit/test_placeholder_character.gd",
+	"res://tests/unit/test_player_interaction.gd",
+	"res://tests/unit/test_input_bindings.gd",
+	"res://tests/unit/test_player_camera.gd",
 	"res://tests/integration/test_floating_origin.gd",
 	"res://tests/integration/test_sector_instance.gd",
 	"res://tests/integration/test_streaming_manager.gd",
 	"res://tests/integration/test_streaming_soak.gd",
 	"res://tests/integration/test_urban_sector.gd",
 	"res://tests/integration/test_urban_streaming.gd",
+	"res://tests/integration/test_player_world.gd",
 ]
 
 

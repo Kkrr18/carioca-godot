@@ -43,6 +43,12 @@ func _ready() -> void:
 		settings.quality_preset = PlatformProfile.recommended_preset()
 		settings.save_to_disk()
 
+	# Ações nomeadas e remapeamento existem antes de qualquer coisa que leia
+	# entrada. Sem isto, `InputBindings.is_pressed` cai no caminho de tecla
+	# padrão — que funciona, mas ignora o remapeamento salvo.
+	InputBindings.ensure_registered()
+	InputBindings.apply_remaps(settings.input_remaps)
+
 	MunicipalityIndex.ensure_loaded()
 	terrain = TerrainService.new(settings.world_seed)
 	start_metric = MunicipalityIndex.center_of(settings.start_municipality)
@@ -131,9 +137,12 @@ func _build_camera() -> void:
 	camera_rig = PlayerCamera.new()
 	camera_rig.name = "PlayerCamera"
 	camera_rig.sensitivity = settings.mouse_sensitivity
+	camera_rig.set_invert_y(settings.camera_invert_y)
 	add_child(camera_rig)
 	camera_rig.set_target(player)
 	player.camera_rig = camera_rig
+	if hud != null and hud.touch != null:
+		camera_rig.touch_controls = hud.touch
 
 
 func _build_streaming() -> void:
@@ -230,6 +239,7 @@ func apply_quality(preset_name: String) -> void:
 
 
 func _apply_quality(preset_name: String) -> void:
+	var preset := QualityProfile.get_preset(preset_name)
 	QualityProfile.apply(preset_name, {
 		"streaming": streaming,
 		"traffic": traffic,
@@ -237,6 +247,19 @@ func _apply_quality(preset_name: String) -> void:
 		"viewport": get_viewport(),
 		"camera": camera_rig.camera if camera_rig != null else null,
 	})
+	# Personagem e câmera têm perfis próprios (Etapa 4): velocidade, pulo, giro,
+	# distância e suavização deixam de ser constantes do controlador.
+	if player != null:
+		player.apply_movement_profile(MovementProfile.from_preset(preset))
+	if camera_rig != null:
+		camera_rig.apply_preset(preset)
+		# Preferências do jogador mandam por cima do perfil gráfico.
+		camera_rig.set_sensitivity(settings.mouse_sensitivity)
+		camera_rig.set_invert_y(settings.camera_invert_y)
+		camera_rig.distance = clampf(settings.camera_distance, camera_rig.min_distance, camera_rig.max_distance)
+		if hud != null and hud.touch != null:
+			hud.touch.look_sensitivity = settings.touch_sensitivity
+			camera_rig.touch_controls = hud.touch
 
 
 func _unhandled_input(event: InputEvent) -> void:
