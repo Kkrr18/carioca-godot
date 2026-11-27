@@ -40,6 +40,7 @@ const TEST_SCRIPTS: Array[String] = [
 	"res://tests/unit/test_placeholder_character.gd",
 	"res://tests/unit/test_player_interaction.gd",
 	"res://tests/unit/test_input_bindings.gd",
+	"res://tests/unit/test_touch_controls.gd",
 	"res://tests/unit/test_player_camera.gd",
 	"res://tests/unit/test_driving_profile.gd",
 	"res://tests/unit/test_drive_model.gd",

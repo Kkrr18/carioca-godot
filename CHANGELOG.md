@@ -4,6 +4,13 @@
 
 ### Repositório e CI
 
+- **Multitouch do HUD corrigido**: um terceiro toque (ou um segundo na metade
+  esquerda) virava pinça de zoom com distância inicial arbitrária, e a abertura
+  da pinça era medida contra a posição do dedo de olhar **depois** de sobrescrevê-la
+  — dava sempre 0, o zoom acumulava desvio a cada arrasto e a câmera desbocava
+  ao andar com o analógico e olhar ao mesmo tempo. A pinça agora só existe com
+  dois dedos na área de olhar, mede a abertura real entre eles e toques extras
+  são ignorados.
 - **Assets órfãos removidos da raiz**: os quatro `character_*.fbx`, os dois
   `The_Corporate_High-Flier*.fbx` e `fps-buildings-env-kit-main.zip` (305 MB)
   não eram referenciados por código nenhum e pesavam o clone e o checkout do CI.

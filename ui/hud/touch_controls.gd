@@ -46,6 +46,10 @@ var _look_last := Vector2.ZERO
 var _look_delta := Vector2.ZERO
 var _look_travel: float = 0.0
 var _pinch_last: float = 0.0
+## Posição atual do dedo de pinça: a abertura é a distância real entre os dois
+## dedos. Sem isto, a distância era medida contra a posição sobrescrita do dedo
+## de olhar — dava sempre 0, e o zoom acumulava desvio a cada arrasto.
+var _pinch_position := Vector2.ZERO
 var _zoom_delta: float = 0.0
 var _jump_pending: bool = false
 var _interact_pending: bool = false
@@ -228,9 +232,16 @@ func handle_touch(index: int, position: Vector2, pressed: bool) -> void:
 			_look_touch = index
 			_look_last = position
 			_look_travel = 0.0
-		elif _pinch_touch < 0:
+		elif _pinch_touch < 0 and position.x >= look_area_starts_at():
+			# Pinça de zoom: só o **segundo dedo na área de olhar**, com o
+			# primeiro ainda olhando. Um toque na metade esquerda (ou um
+			# terceiro em qualquer lugar) era tratado como pinça com uma
+			# distância inicial arbitrária — e a câmera desbocava no zoom
+			# justamente quando se andava com o analógico e olhava com o dedo.
 			_pinch_touch = index
+			_pinch_position = position
 			_pinch_last = position.distance_to(_look_last)
+		# Dedos além de analógico + olhar + pinça não têm papel: ignorados.
 		queue_redraw()
 		return
 
@@ -243,9 +254,11 @@ func handle_touch(index: int, position: Vector2, pressed: bool) -> void:
 		_look_touch = -1
 		_pinch_touch = -1
 		_pinch_last = 0.0
+		_pinch_position = Vector2.ZERO
 	elif index == _pinch_touch:
 		_pinch_touch = -1
 		_pinch_last = 0.0
+		_pinch_position = Vector2.ZERO
 	elif index == _jump_touch:
 		_jump_touch = -1
 	elif index == _sprint_touch:
@@ -284,9 +297,18 @@ func handle_drag(index: int, position: Vector2) -> void:
 		_look_travel += delta.length()
 		_look_delta += delta
 		if _pinch_touch >= 0:
-			var distance := position.distance_to(_look_last)
-			_zoom_delta += distance - _pinch_last
-			_pinch_last = distance
+			# Abertura real entre os dois dedos: o dedo de olhar e o de pinça.
+			# Medir contra `_look_last` depois de sobrescrevê-lo dava sempre 0,
+			# e `_zoom_delta` acumulava - _pinch_last por evento de arrasto.
+			var span := position.distance_to(_pinch_position)
+			_zoom_delta += span - _pinch_last
+			_pinch_last = span
+	elif index == _pinch_touch:
+		_pinch_position = position
+		if _look_touch >= 0:
+			var span := _look_last.distance_to(_pinch_position)
+			_zoom_delta += span - _pinch_last
+			_pinch_last = span
 
 
 func consume_look() -> Vector2:
@@ -347,6 +369,8 @@ func reset() -> void:
 	_move_touch = -1
 	_look_touch = -1
 	_pinch_touch = -1
+	_pinch_last = 0.0
+	_pinch_position = Vector2.ZERO
 	_jump_touch = -1
 	_sprint_touch = -1
 	_interact_touch = -1
