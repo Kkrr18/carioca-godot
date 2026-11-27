@@ -299,10 +299,8 @@ Nada é baixado em tempo de execução.
   decisão de orçamento para o iPhone 12.
 - **Minimapa é 2D**, desenhado a partir do payload, não uma câmera renderizada.
 - **Sem menu**: o jogo entra direto no mundo; save e perfil estão em teclas.
-- Os `.fbx` na raiz do repositório não são usados por nada aqui. Os quatro
-  `character_*.fbx` são da Etapa 1; `The_Corporate_High-Flier*.fbx` e
-  `fps-buildings-env-kit-main.zip` apareceram no repositório durante a Etapa 4 e
-  não são referenciados por código nenhum.
+- Os `.fbx` da Etapa 1 e o kit de 305 MB que ficavam na raiz foram removidos:
+  nada os referenciava, e pesavam o clone e o checkout do CI.
 
 ## Estrutura
 

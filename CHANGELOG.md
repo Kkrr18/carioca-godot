@@ -1,5 +1,16 @@
 # Changelog
 
+## Não lançado
+
+### Repositório e CI
+
+- **Assets órfãos removidos da raiz**: os quatro `character_*.fbx`, os dois
+  `The_Corporate_High-Flier*.fbx` e `fps-buildings-env-kit-main.zip` (305 MB)
+  não eram referenciados por código nenhum e pesavam o clone e o checkout do CI.
+- **O workflow de testes emite cada falha da suíte como annotation** (`::error::`),
+  visível na API pública do job — antes, diagnosticar uma falha exigia login no
+  GitHub, porque o painel de log não abre para visitantes.
+
 ## 0.5.0 — Veículos
 
 Etapa 5: o personagem da Etapa 4 agora entra num carro e dirige pelas ruas do
