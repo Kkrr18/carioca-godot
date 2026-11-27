@@ -38,11 +38,6 @@ jobs:
           unzip -q templates.tpz -d tpz
           mv tpz/templates/* ~/.local/share/godot/export_templates/4.4.stable/
 
-      # Os .fbx e o kit de 305 MB não são usados por código nenhum
-      # (declara o README) e não fazem parte do build.
-      - name: Remover assets não usados
-        run: rm -f *.fbx fps-buildings-env-kit-main.zip
-
       - name: Importar recursos
         run: ./godot --headless --path . --import
 
