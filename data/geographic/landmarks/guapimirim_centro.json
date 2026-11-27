@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "id": "guapimirim_centro",
+  "anchor": {
+    "municipality": "GUAPI",
+    "offset_m": [0.0, 0.0]
+  },
+  "provenance": {
+    "source": "referências públicas de larga escala do núcleo urbano de Guapimirim, ancoradas no centro municipal",
+    "license": "CC0-1.0 — obra do próprio projeto CARIOCA",
+    "confidence": "baixa",
+    "note": "Cada ponto declara a própria confiança e uma frase dizendo o que ele é e o que não é. Nenhuma edificação daqui é reprodução fiel: o que existe é uma massa genérica (largura, profundidade, altura, giro) no lugar do ponto, marcada com landmark_id e confidence no payload. Substituir por dado levantado é tarefa de importação, não de código: basta acrescentar um JSON nesta pasta."
+  },
+  "landmarks": [
+    {
+      "id": "estacao_guapimirim",
+      "name": "Estação ferroviária de Guapimirim",
+      "kind": "estacao",
+      "role": "landmark",
+      "meters": [66, 108],
+      "radius_m": 26.0,
+      "confidence": "baixa",
+      "sources": [
+        "eixo ferroviário declarado em data/geographic/urban/guapimirim_centro.json",
+        "conhecimento público de que o município é servido por linha ferroviária urbana"
+      ],
+      "honesty": "O prédio desenhado é uma massa genérica de estação: as dimensões são uma estimativa do que cabe no local, não medição. A posição é a interseção do eixo ferroviário esquemático com a área central — aproximação, não georreferenciamento.",
+      "generate": {
+        "type": "building",
+        "typology": "commercial_building",
+        "footprint_m": [34.0, 12.0],
+        "levels": 1,
+        "height_m": 6.5,
+        "rotation_deg": 4.0,
+        "roof": "gable"
+      }
+    },
+    {
+      "id": "espaco_aberto_central",
+      "name": "Espaço aberto central",
+      "kind": "praca",
+      "role": "open_space",
+      "meters": [-96, 132],
+      "radius_m": 30.0,
+      "confidence": "baixa",
+      "sources": ["leitura de que o núcleo urbano tem área livre de uso público junto ao eixo central"],
+      "honesty": "Espaço aberto genérico na área central, sem nome e sem traçado levantado. NÃO corresponde a uma praça específica identificada; serve para o sistema de áreas públicas, vegetação e mobiliário ser exercitado num lugar real do mapa.",
+      "generate": {
+        "type": "open_space"
+      }
+    },
+    {
+      "id": "rio_iconha",
+      "name": "Rio Iconha",
+      "kind": "rio",
+      "role": "barrier",
+      "kind_note": "curso d'água que atravessa a área central",
+      "width_m": 8.0,
+      "protected_buffer_m": 8.0,
+      "confidence": "baixa",
+      "sources": ["hidrografia de larga escala do município"],
+      "honesty": "Traçado aproximado do curso d'água. A faixa não edificável em volta é uma decisão do gerador (buffer), não uma Área de Preservação Permanente delimitada por órgão ambiental.",
+      "polyline_m": [[-920, -560], [-500, -470], [-180, -330], [120, -170], [420, -70], [720, -12], [920, 34]]
+    },
+    {
+      "id": "eixo_ferroviario",
+      "name": "Eixo ferroviário",
+      "kind": "ferrovia",
+      "role": "barrier",
+      "width_m": 5.0,
+      "protected_buffer_m": 3.0,
+      "confidence": "baixa",
+      "sources": ["linha ferroviária que serve o município"],
+      "honesty": "Eixo esquemático, sem levantamento de bitola, pátio ou obras de arte. Marca apenas que ali não nasce edificação, e a malha da ferrovia ainda não é construída pelo renderizador (limitação declarada em docs/ETAPA3.md).",
+      "polyline_m": [[-920, 128], [-440, 116], [-40, 108], [380, 124], [920, 140]]
+    }
+  ]
+}

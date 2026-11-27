@@ -1,0 +1,125 @@
+class_name MaterialLibrary
+extends RefCounted
+
+## Materiais compartilhados. Criados uma vez e reaproveitados: materiais
+## duplicados impedem o agrupamento de draw calls, e o alvo de 30 FPS no
+## iPhone 12 depende justamente disso.
+
+static var _cache: Dictionary = {}
+
+
+static func _get_or_create(key: String, factory: Callable) -> Material:
+	if _cache.has(key):
+		return _cache[key]
+	var created: Material = factory.call()
+	_cache[key] = created
+	return created
+
+
+static func reset_cache() -> void:
+	_cache.clear()
+
+
+static func terrain() -> ShaderMaterial:
+	return _get_or_create("terrain", func() -> Material:
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://rendering/materials/terrain.gdshader")
+		return mat)
+
+
+static func road() -> StandardMaterial3D:
+	return _get_or_create("road", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.145, 0.145, 0.16)
+		mat.roughness = 0.88
+		mat.metallic = 0.0
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		return mat)
+
+
+static func vertex_colored(roughness: float = 0.75) -> StandardMaterial3D:
+	return _get_or_create("vertex_%.2f" % roughness, func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo = true
+		mat.albedo_color = Color.WHITE
+		mat.roughness = roughness
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		return mat)
+
+
+static func foliage() -> StandardMaterial3D:
+	return _get_or_create("foliage", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo = true
+		mat.albedo_color = Color(0.26, 0.38, 0.20)
+		mat.roughness = 0.95
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		return mat)
+
+
+static func prop() -> StandardMaterial3D:
+	return _get_or_create("prop", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.36, 0.37, 0.38)
+		mat.roughness = 0.7
+		mat.metallic = 0.35
+		return mat)
+
+
+## Luminária pública: um único material emissivo compartilhado por todas as
+## luminárias do mundo. O ciclo dia/noite altera a emissão aqui e todas acendem
+## ao mesmo tempo, sem uma luz por poste.
+static func street_lamps() -> StandardMaterial3D:
+	return _get_or_create("street_lamp", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.92, 0.88, 0.72)
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.86, 0.55)
+		mat.emission_energy_multiplier = 0.0
+		mat.roughness = 0.35
+		return mat)
+
+
+static func vehicle(body_color: Color) -> StandardMaterial3D:
+	var key := "vehicle_%s" % body_color.to_html(false)
+	return _get_or_create(key, func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = body_color
+		mat.roughness = 0.35
+		mat.metallic = 0.45
+		return mat)
+
+
+static func pedestrian(cloth_color: Color) -> StandardMaterial3D:
+	var key := "ped_%s" % cloth_color.to_html(false)
+	return _get_or_create(key, func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = cloth_color
+		mat.roughness = 0.85
+		return mat)
+
+
+static func interior_wall() -> StandardMaterial3D:
+	return _get_or_create("int_wall", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.86, 0.84, 0.79)
+		mat.roughness = 0.9
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		return mat)
+
+
+static func interior_floor() -> StandardMaterial3D:
+	return _get_or_create("int_floor", func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.42, 0.31, 0.22)
+		mat.roughness = 0.8
+		return mat)
+
+
+static func furniture(color: Color) -> StandardMaterial3D:
+	var key := "furn_%s" % color.to_html(false)
+	return _get_or_create(key, func() -> Material:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = color
+		mat.roughness = 0.75
+		return mat)

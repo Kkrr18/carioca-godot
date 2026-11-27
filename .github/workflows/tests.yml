@@ -1,0 +1,26 @@
+name: testes
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  headless:
+    name: Suíte headless (Godot 4.4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Baixar Godot 4.4 headless
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          mv Godot_v4.4-stable_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Importar recursos
+        run: ./godot --headless --path . --import || true
+
+      - name: Rodar a suíte
+        run: ./godot --headless --path . --script res://tests/run_tests.gd

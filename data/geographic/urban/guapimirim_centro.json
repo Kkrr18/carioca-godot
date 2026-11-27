@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "id": "guapimirim_centro",
+  "anchor": {
+    "municipality": "GUAPI",
+    "offset_m": [0.0, 0.0]
+  },
+  "provenance": {
+    "source": "traçado esquemático autoral em metros, ancorado no centro municipal de Guapimirim (data/geographic/municipalities.json)",
+    "license": "CC0-1.0 — obra do próprio projeto CARIOCA",
+    "confidence": "baixa",
+    "note": "Ruas e barreiras foram desenhadas à mão a partir do centro municipal, com classes e larguras plausíveis para o núcleo urbano de uma cidade pequena da Baixada/Serrana fluminense. NÃO é levantamento, NÃO é dado cadastral e NÃO é extrato do OpenStreetMap. Existe para o sistema urbano ter geometria sobre a qual trabalhar; é substituído automaticamente, setor por setor, quando data/geographic/sectors contiver o setor importado de um .osm real (tools/map_importer/import_osm.gd)."
+  },
+  "streets": [
+    {
+      "id": "eixo_norte_sul",
+      "class": "arterial",
+      "width": 14.0,
+      "name": "",
+      "meters": [[-14, -920], [-8, -520], [-2, -220], [6, 60], [2, 380], [-8, 700], [-16, 920]]
+    },
+    {
+      "id": "eixo_leste_oeste",
+      "class": "arterial",
+      "width": 13.0,
+      "name": "",
+      "meters": [[-920, -26], [-420, -16], [-60, -6], [300, 6], [640, 18], [920, 28]]
+    },
+    {
+      "id": "anel_norte",
+      "class": "collector",
+      "width": 9.0,
+      "name": "",
+      "meters": [[-640, 308], [-280, 296], [80, 304], [420, 292], [700, 300]]
+    },
+    {
+      "id": "anel_sul",
+      "class": "collector",
+      "width": 9.0,
+      "name": "",
+      "meters": [[-620, -368], [-260, -356], [120, -348], [480, -358], [720, -350]]
+    },
+    {
+      "id": "ligacao_oeste",
+      "class": "collector",
+      "width": 9.0,
+      "name": "",
+      "meters": [[-312, -640], [-306, -300], [-310, 40], [-300, 400], [-308, 660]]
+    },
+    {
+      "id": "ligacao_leste",
+      "class": "collector",
+      "width": 9.0,
+      "name": "",
+      "meters": [[352, -660], [346, -280], [338, 110], [344, 520], [350, 700]]
+    },
+    {
+      "id": "diagonal_central",
+      "class": "collector",
+      "width": 8.0,
+      "name": "",
+      "meters": [[-306, 62], [-40, 124], [150, 118], [338, 112]]
+    },
+    {
+      "id": "local_oeste_1",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-520, -356], [-514, -120], [-520, 120], [-514, 296]]
+    },
+    {
+      "id": "local_oeste_2",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-170, -352], [-176, -120], [-168, 40]]
+    },
+    {
+      "id": "local_central_1",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[150, -348], [156, -120], [150, 4]]
+    },
+    {
+      "id": "local_central_2",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-2, 122], [4, 240], [0, 300]]
+    },
+    {
+      "id": "local_leste_1",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[520, -350], [512, -120], [516, 112]]
+    },
+    {
+      "id": "local_leste_2",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[180, 118], [186, 296]]
+    },
+    {
+      "id": "local_oeste_3",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-500, 300], [-496, 160], [-502, 64]]
+    },
+    {
+      "id": "local_sul_1",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-60, -360], [-56, -210], [-50, -62]]
+    },
+    {
+      "id": "local_norte_1",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[64, 118], [70, 230], [66, 298]]
+    },
+    {
+      "id": "travessa_sul",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-514, -62], [-176, -54], [156, -50], [512, -56]]
+    },
+    {
+      "id": "travessa_norte",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-516, 182], [-168, 174], [156, 180], [516, 172]]
+    },
+    {
+      "id": "travessa_longe_sul",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-306, -500], [-60, -492], [120, -486], [346, -494]]
+    },
+    {
+      "id": "travessa_longe_norte",
+      "class": "local",
+      "width": 6.0,
+      "name": "",
+      "meters": [[-306, 500], [-40, 494], [180, 498], [344, 490]]
+    }
+  ],
+  "barriers": [
+    {
+      "id": "rio_iconha",
+      "name": "Rio Iconha",
+      "kind": "water",
+      "width_m": 8.0,
+      "protected_buffer_m": 8.0,
+      "meters": [[-920, -560], [-500, -470], [-180, -330], [120, -170], [420, -70], [720, -12], [920, 34]]
+    },
+    {
+      "id": "ferrovia_guapimirim",
+      "name": "Eixo ferroviário",
+      "kind": "rail",
+      "width_m": 5.0,
+      "protected_buffer_m": 3.0,
+      "meters": [[-920, 128], [-440, 116], [-40, 108], [380, 124], [920, 140]]
+    }
+  ]
+}

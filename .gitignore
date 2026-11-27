@@ -1,0 +1,15 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg
+.DS_Store
+
+# Dados brutos que não vão para o repositório (baixados pelo usuário)
+data/geographic/elevation/*.hgt
+data/geographic/osm/*.osm
+data/geographic/osm/*.osm.pbf
+data/geographic/sectors/
+
+# Builds
+build/
+*.zip
