@@ -29,8 +29,10 @@ jobs:
       - name: Rodar a suíte
         run: |
           set -o pipefail
-          ./godot --headless --path . --script res://tests/run_tests.gd 2>&1 | tee /tmp/suite.log
+          ./godot --headless --path . --script res://tests/run_tests.gd 2>&1 | tee /tmp/suite.log || code=$?
           # As annotations são o único resumo de falha visível sem login na
           # página do job: cada linha de falha vira um ::error:: com o teste
-          # e a mensagem, legível pela API pública.
+          # e a mensagem, legível pela API pública. O grep roda MESMO com a
+          # suíte falhando — é exatamente quando ele importa.
           grep -E "FALHOU|\[ERRO\]|FALHAS EM" /tmp/suite.log | sed 's/^/::error::/' || true
+          exit ${code:-0}
